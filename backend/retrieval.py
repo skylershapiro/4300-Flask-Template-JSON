@@ -43,7 +43,7 @@ if tags != "": use_tags = True
 if price_range != (1,200): use_price_range = True
 if exact_product_search != "": use_exact_product_search = True
 
-# find 20 most relevant documents using levenshtein edit distance between user free-text queries and product names
+# find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
 
 # read in data
 df = pd.read_csv("/Users/skylershapiro/cs4300/skincare_products_clean.csv")
@@ -58,7 +58,7 @@ for d in df['product_name']:
        relevant_doc_inds.append((d, sim)) # store document and similarity score
 
 # return top 20 matches
-top_20_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
-print(top_20_relevant_docs)
+top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
+print(top_3_relevant_docs)
        
 
