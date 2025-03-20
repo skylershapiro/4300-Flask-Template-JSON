@@ -16,7 +16,6 @@ def parse_json():
     '''This function recieves JSON output from frontend and parses into suitable format to conduct information retrieval'''
     with open("user_data.json", "r", encoding="utf-8") as file:
         user_data = json.load(file) 
-    
     # Convert to structured format
     parsed_data = []
     for entry in user_data:
@@ -49,21 +48,24 @@ Should be able to tolerate miss-spellings and near-perfect hits (fuzzy match). '
 
 # logic to determine how to conduct retrieval
 
-
 use_tags = False
 use_price_range = False
+use_brand = False
 use_exact_product_search = False
 
 if tags != "": use_tags = True
 if price_range != (1,200): use_price_range = True
 if exact_product_search != "": use_exact_product_search = True
 
-# find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
+#Perform retreival using criteria
+df = pd.read_csv("/Users/skylershapiro/cs4300/4300-Flask-Template-JSON/sephora_product_df.csv")
 
-# read in data
-df = pd.read_csv("skincare_products_clean.csv")
-df = df[["product_name", "product_type", "price"]]
+if use_price_range: # drop products that don't fit price range
+    df = df[df['price_usd'] < price_range[0] | df['price'] > price_range[1]] 
+if use_brand: #drop products that don't fit brand name
+    df = df[df['brand_name'] == brand_name] 
 
+# find most relevant products according to free-text query
 relevant_doc_inds = []
 i = 0
 for d in df['product_name']:
@@ -74,6 +76,22 @@ for d in df['product_name']:
 
 # return top 20 matches
 top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
-#print(top_3_relevant_docs)
+
+# # find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
+# # read in data
+# df = pd.read_csv("skincare_products_clean.csv")
+# df = df[["product_name", "product_type", "price"]]
+
+# relevant_doc_inds = []
+# i = 0
+# for d in df['product_name']:
+#    i += 1 
+#    sim = nltk.edit_distance(exact_product_search, d.split()) # calculate similiarty between query and product name
+#    if sim > 0.6: # throw out obvious poor matches
+#        relevant_doc_inds.append((d, sim)) # store document and similarity score
+
+# # return top 20 matches
+# top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
+# #print(top_3_relevant_docs)
        
 
