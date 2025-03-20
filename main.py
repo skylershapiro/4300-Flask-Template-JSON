@@ -2,7 +2,7 @@
 import streamlit as st
 import json 
 import os
-from retrieval import top_3_relevant_docs
+from retrieval import top_3_relevant_docs, last_user_query
 
 user_data = "user_data.json"
 def load_data():
@@ -41,4 +41,5 @@ if st.button("Search SmartSkin!"):
     }
     save_data(user_entry)
     st.write(top_3_relevant_docs)
+    st.write(last_user_query)
    

@@ -5,11 +5,30 @@
     #a "parse_query.py" that smoothly passes Frontend output into this retrieval system in the backend
 
 #SIMPLIFIED IMPLEMENTATION for TA meeting on 3/19
+#Determine how to build search criteria
+import nltk
+import pandas as pd
+import json
+import os
+
 
 def parse_json():
     '''This function recieves JSON output from frontend and parses into suitable format to conduct information retrieval'''
-    pass
+    with open("user_data.json", "r", encoding="utf-8") as file:
+        user_data = json.load(file) 
+    
+    # Convert to structured format
+    parsed_data = []
+    for entry in user_data:
+        parsed_data.append({
+            "skin_concerns": entry.get("skin_concerns", []),  # Default to empty list if missing
+            "price_range": tuple(entry.get("price_range", [0, 0])),  # Convert to tuple for immutability
+            "query": entry.get("user_search_input", "").lower()  # Normalize search input
+        })
+    
+    return parsed_data
 
+last_user_query = parse_json()[-1]
 
 tags = ["moisturizer"] 
 '''
@@ -30,10 +49,6 @@ Should be able to tolerate miss-spellings and near-perfect hits (fuzzy match). '
 
 # logic to determine how to conduct retrieval
 
-
-#Determine how to build search criteria
-import nltk
-import pandas as pd
 
 use_tags = False
 use_price_range = False
