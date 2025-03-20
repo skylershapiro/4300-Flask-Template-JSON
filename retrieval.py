@@ -75,7 +75,7 @@ for d in df['product_name']:
        relevant_doc_inds.append((d, sim)) # store document and similarity score
 
 # return top 20 matches
-top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
+top_5_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-5:]
 
 # # find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
 # # read in data
