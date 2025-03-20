@@ -46,7 +46,7 @@ if exact_product_search != "": use_exact_product_search = True
 # find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
 
 # read in data
-df = pd.read_csv("/Users/skylershapiro/cs4300/skincare_products_clean.csv")
+df = pd.read_csv("skincare_products_clean.csv")
 df = df[["product_name", "product_type", "price"]]
 
 relevant_doc_inds = []
@@ -59,6 +59,6 @@ for d in df['product_name']:
 
 # return top 20 matches
 top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
-print(top_3_relevant_docs)
+#print(top_3_relevant_docs)
        
 
