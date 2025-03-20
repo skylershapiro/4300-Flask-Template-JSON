@@ -1,8 +1,9 @@
 #code for frontend
 import streamlit as st
+import pandas as pd
 import json 
 import os
-from retrieval import top_3_relevant_docs, last_user_query
+from retrieval import top_5_relevant_docs, last_user_query
 
 user_data = "user_data.json"
 def load_data():
@@ -22,6 +23,14 @@ def save_data(new_entry):
 
 st.title('Welcome to SmartSkin')
 skin_concerns = st.multiselect("Skin Concerns", ["Acne", "Dry Skin", "Oily skin", "Sensitive Skin", "Wrinkles", "Large Pores", "Redness", "Dullness", "Scars", "Dark Circles", "Texture"])
+
+#brand names
+df = pd.read_csv("sephora_product_df.csv")
+brands = sorted(df['brand_name'].dropna().unique().tolist())
+
+brand_name = st.selectbox("Brands", brands)
+st.write("Selected Brand:", brand_name) 
+
 price_range = st.slider(
     "Price Range",
     min_value=0,  
@@ -36,10 +45,11 @@ user_search_input = st.text_input("Search for a product")
 if st.button("Search SmartSkin!"):
     user_entry = {
         "skin_concerns": skin_concerns, 
-        "price_range": price_range, 
+        "price_range": price_range,  
+        "brand_name": brand_name,
         "user_search_input" : user_search_input
     }
     save_data(user_entry)
-    st.write(top_3_relevant_docs)
+    st.write(top_5_relevant_docs)
     st.write(last_user_query)
    

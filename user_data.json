@@ -50,5 +50,52 @@
             200
         ],
         "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Oily skin",
+            "Redness",
+            "Scars"
+        ],
+        "price_range": [
+            122,
+            200
+        ],
+        "brand_name": "Caudalie",
+        "user_search_input": "Cleanser"
+    },
+    {
+        "skin_concerns": [],
+        "price_range": [
+            54,
+            200
+        ],
+        "brand_name": "Versace",
+        "user_search_input": "Cleanser"
+    },
+    {
+        "skin_concerns": [
+            "Oily skin",
+            "Large Pores",
+            "Dullness"
+        ],
+        "price_range": [
+            34,
+            144
+        ],
+        "brand_name": "ABBOTT",
+        "user_search_input": "Cleanser"
+    },
+    {
+        "skin_concerns": [
+            "Wrinkles",
+            "Large Pores"
+        ],
+        "price_range": [
+            60,
+            200
+        ],
+        "brand_name": "Anastasia Beverly Hills",
+        "user_search_input": "Cleanser"
     }
 ]

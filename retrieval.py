@@ -21,6 +21,7 @@ def parse_json():
     for entry in user_data:
         parsed_data.append({
             "skin_concerns": entry.get("skin_concerns", []),  # Default to empty list if missing
+            "brand_name": entry.get("brand_name", ""),
             "price_range": tuple(entry.get("price_range", [0, 0])),  # Convert to tuple for immutability
             "query": entry.get("user_search_input", "").lower()  # Normalize search input
         })
@@ -58,10 +59,11 @@ if price_range != (1,200): use_price_range = True
 if exact_product_search != "": use_exact_product_search = True
 
 #Perform retreival using criteria
-df = pd.read_csv("/Users/skylershapiro/cs4300/4300-Flask-Template-JSON/sephora_product_df.csv")
+#df = pd.read_csv("/Users/skylershapiro/cs4300/4300-Flask-Template-JSON/sephora_product_df.csv")
+df = pd.read_csv("sephora_product_df.csv")
 
 if use_price_range: # drop products that don't fit price range
-    df = df[df['price_usd'] < price_range[0] | df['price'] > price_range[1]] 
+    df = df[df['price_usd'] < price_range[0] | df['price_usd'] > price_range[1]] 
 if use_brand: #drop products that don't fit brand name
     df = df[df['brand_name'] == brand_name] 
 
