@@ -29,6 +29,9 @@ def parse_json():
     return parsed_data
 
 last_user_query = parse_json()[-1]
+price_range = last_user_query["price_range"]
+brand_name = last_user_query["brand_name"]
+user_text_query = last_user_query["query"]
 
 tags = ["moisturizer"] 
 '''
@@ -54,16 +57,18 @@ use_price_range = False
 use_brand = False
 use_exact_product_search = False
 
-if tags != "": use_tags = True
-if price_range != (1,200): use_price_range = True
+if tags: use_tags = True
+if price_range != (0,200): use_price_range = True
+if brand_name: use_brand = True
 if exact_product_search != "": use_exact_product_search = True
+
 
 #Perform retreival using criteria
 #df = pd.read_csv("/Users/skylershapiro/cs4300/4300-Flask-Template-JSON/sephora_product_df.csv")
 df = pd.read_csv("sephora_product_df.csv")
 
 if use_price_range: # drop products that don't fit price range
-    df = df[df['price_usd'] < price_range[0] | df['price_usd'] > price_range[1]] 
+    df = df[(df['price_usd'] >= price_range[0]) & (df['price_usd'] <= price_range[1])]
 if use_brand: #drop products that don't fit brand name
     df = df[df['brand_name'] == brand_name] 
 
@@ -72,12 +77,15 @@ relevant_doc_inds = []
 i = 0
 for d in df['product_name']:
    i += 1 
-   sim = nltk.edit_distance(exact_product_search, d.split()) # calculate similiarty between query and product name
+   sim = nltk.edit_distance(exact_product_search, d) # calculate similarity between query and product name
    if sim > 0.6: # throw out obvious poor matches
-       relevant_doc_inds.append((d, sim)) # store document and similarity score
+       relevant_doc_inds.append((d, sim, df.loc[df['product_name'] == d, 'price_usd'].values[0])) # store document and similarity score
 
 # return top 20 matches
-top_5_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-5:]
+top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
+
+
+
 
 # # find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
 # # read in data

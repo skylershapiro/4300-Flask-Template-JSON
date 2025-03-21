@@ -97,5 +97,62 @@
         ],
         "brand_name": "Anastasia Beverly Hills",
         "user_search_input": "Cleanser"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin",
+            "Oily skin"
+        ],
+        "price_range": [
+            0,
+            200
+        ],
+        "brand_name": "Azzaro",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            47,
+            200
+        ],
+        "brand_name": "ALTERNA Haircare",
+        "user_search_input": "shampoo"
+    },
+    {
+        "skin_concerns": [
+            "Wrinkles",
+            "Dry Skin"
+        ],
+        "price_range": [
+            27,
+            136
+        ],
+        "brand_name": "CAY SKIN",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Sensitive Skin"
+        ],
+        "price_range": [
+            51,
+            152
+        ],
+        "brand_name": "ALTERNA Haircare",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            0,
+            200
+        ],
+        "brand_name": "BURBERRY",
+        "user_search_input": "perfume"
     }
 ]

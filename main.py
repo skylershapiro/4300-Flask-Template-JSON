@@ -50,6 +50,9 @@ if st.button("Search SmartSkin!"):
         "user_search_input" : user_search_input
     }
     save_data(user_entry)
-    st.write(top_5_relevant_docs)
-    st.write(last_user_query)
+    st.markdown("### Top 5 Relevant Products:")
+    for product, sim, price in top_5_relevant_docs:
+        st.markdown(f"**{product}**  \n💰 **Price:** ${price:.2f}  \n🔍 **Similarity Score:** {sim:.2f}")
+        st.write("---")  # Adds a separator for readability
+
    
