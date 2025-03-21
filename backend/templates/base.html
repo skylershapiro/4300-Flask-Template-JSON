@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartSkin - Search</title>
@@ -13,230 +12,239 @@
 
     <!-- Styling -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
 
-        .container {
-            width: 50%;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            box-shadow: 0px 0px 10px gray;
-            border-radius: 5px;
-        }
+      .container {
+        width: 50%;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        box-shadow: 0px 0px 10px gray;
+        border-radius: 5px;
+      }
 
-        h1,
-        h2 {
-            color: #333;
-        }
+      h1,
+      h2 {
+        color: #333;
+      }
 
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-        label {
-            margin-top: 10px;
-        }
+      label {
+        margin-top: 10px;
+      }
 
-        select,
-        input,
-        button {
-            margin: 5px;
-            padding: 10px;
-            width: 80%;
-        }
+      select,
+      input,
+      button {
+        margin: 5px;
+        padding: 10px;
+        width: 80%;
+      }
 
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+      button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
 
-        button:hover {
-            background-color: #218838;
-        }
+      button:hover {
+        background-color: #218838;
+      }
 
-        .results ul {
-            list-style-type: none;
-            padding: 0;
-        }
+      .results ul {
+        list-style-type: none;
+        padding: 0;
+      }
 
-        .results li {
-            background: #fff;
-            padding: 10px;
-            margin: 5px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 5px gray;
-        }
+      .results li {
+        background: #fff;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px gray;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        function SmartSkinApp() {
-            const [query, setQuery] = React.useState("");
-            const [results, setResults] = React.useState([]);
-            const [skinConcerns, setSkinConcerns] = React.useState([]);
-            const [brand, setBrand] = React.useState("Any");
-            const [priceRange, setPriceRange] = React.useState([0, 200]);
+      function SmartSkinApp() {
+        const [query, setQuery] = React.useState("");
+        const [results, setResults] = React.useState([]);
+        const [skinConcerns, setSkinConcerns] = React.useState([]);
+        const [brand, setBrand] = React.useState("Any");
+        const [brands, setBrands] = React.useState(["Any"]);
+        const [priceRange, setPriceRange] = React.useState([0, 200]);
 
-            // const handleSearch = (e) => {
-            //     e.preventDefault();
+        // const handleSearch = (e) => {
+        //     e.preventDefault();
 
-            // Simulated results (Replace with API call when Flask is running)
-            // //   const dummyResults = [
-            // //     ["CeraVe Moisturizing Lotion", 0.95, 14.99],
-            // //     ["Neutrogena Hydro Boost", 0.92, 18.5],
-            // //     ["La Roche-Posay Face Cream", 0.89, 29.99],
-            // //     ["The Ordinary Niacinamide", 0.87, 9.9],
-            // //     ["Paula’s Choice BHA", 0.85, 33.0],
-            // //   ];
+        // Simulated results (Replace with API call when Flask is running)
+        // //   const dummyResults = [
+        // //     ["CeraVe Moisturizing Lotion", 0.95, 14.99],
+        // //     ["Neutrogena Hydro Boost", 0.92, 18.5],
+        // //     ["La Roche-Posay Face Cream", 0.89, 29.99],
+        // //     ["The Ordinary Niacinamide", 0.87, 9.9],
+        // //     ["Paula’s Choice BHA", 0.85, 33.0],
+        // //   ];
 
-            //   setResults(dummyResults);
-            // };
-            const handleSearch = async (e) => {
-                e.preventDefault();
-                const formData = {
-                    skin_concerns: skinConcerns,
-                    price_range: priceRange,
-                    brand_name: brand,
-                    user_search_input: query
-                };
+        //   setResults(dummyResults);
+        // };
+        React.useEffect(() => {
+          fetch("http://localhost:5013/brands")
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.brands) {
+                setBrands(["Any", ...data.brands]); // Add "Any" as default option
+              }
+            })
+            .catch((error) => console.error("Error fetching brands:", error));
+        }, []);
 
-                console.log("Sending JSON payload:", formData); // Debug: Log the payload
+        const handleSearch = async (e) => {
+          e.preventDefault();
+          const formData = {
+            skin_concerns: skinConcerns,
+            price_range: priceRange,
+            brand_name: brand,
+            user_search_input: query,
+          };
 
-                try {
-                    const response = await fetch("http://localhost:5013/search", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(formData)
-                    });
+          console.log("Sending JSON payload:", formData); // Debug: Log the payload
 
-                    console.log("Response status:", response.status); // Debug: Log the response status
+          try {
+            const response = await fetch("http://localhost:5013/search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
+            console.log("Response status:", response.status); // Debug: Log the response status
 
-                    const data = await response.json();
-                    console.log("Received data:", data); // Debug: Log the received data
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
-                    setResults(data.results);
-                } catch (error) {
-                    console.error("Error fetching data", error);
+            const data = await response.json();
+            console.log("Received data:", data); // Debug: Log the received data
+
+            setResults(data.results);
+          } catch (error) {
+            console.error("Error fetching data", error);
+          }
+        };
+        return (
+          <div className="container">
+            <h1>Welcome to SmartSkin</h1>
+            <form onSubmit={handleSearch}>
+              {/* Skin Concerns */}
+              <label>Skin Concerns:</label>
+              <select
+                multiple="multiple"
+                onChange={(e) =>
+                  setSkinConcerns(
+                    [...e.target.selectedOptions].map((o) => o.value)
+                  )
                 }
-            };
-            return (
-                <div className="container">
-                    <h1>Welcome to SmartSkin</h1>
-                    <form onSubmit={handleSearch}>
-                        {/* Skin Concerns */}
-                        <label>Skin Concerns:</label>
-                        <select
-                            multiple="multiple"
-                            onChange={(e) =>
-                                setSkinConcerns(
-                                    [...e.target.selectedOptions].map((o) => o.value)
-                                )
-                            }
-                        >
-                            {[
-                                "Acne",
-                                "Dry Skin",
-                                "Oily skin",
-                                "Sensitive Skin",
-                                "Wrinkles",
-                                "Large Pores",
-                                "Redness",
-                                "Dullness",
-                                "Scars",
-                                "Dark Circles",
-                                "Texture",
-                            ].map((concern) => (
-                                <option key={concern} value={concern}>
-                                    {concern}
-                                </option>
-                            ))}
-                        </select>
+              >
+                {[
+                  "Acne",
+                  "Dry Skin",
+                  "Oily skin",
+                  "Sensitive Skin",
+                  "Wrinkles",
+                  "Large Pores",
+                  "Redness",
+                  "Dullness",
+                  "Scars",
+                  "Dark Circles",
+                  "Texture",
+                ].map((concern) => (
+                  <option key={concern} value={concern}>
+                    {concern}
+                  </option>
+                ))}
+              </select>
 
-                        {/* Brand Selection */}
-                        <label>Brand:</label>
-                        <select onChange={(e) => setBrand(e.target.value)}>
-                            {["Any", "CeraVe", "The Ordinary", "La Roche-Posay"].map(
-                                (brand) => (
-                                    <option key={brand} value={brand}>
-                                        {brand}
-                                    </option>
-                                )
-                            )}
-                        </select>
+              {/* Brand Selection */}
+              <label>Brand:</label>
+              <select onChange={(e) => setBrand(e.target.value)}>
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
 
-                        {/* Price Range */}
-                        <label>Price Range ($):</label>
-                        <input
-                            type="number"
-                            min="0"
-                            max="200"
-                            value={priceRange[0]}
-                            onChange={(e) =>
-                                setPriceRange([parseInt(e.target.value), priceRange[1]])
-                            }
-                        />
-                        <span> to </span>
-                        <input
-                            type="number"
-                            min="0"
-                            max="200"
-                            value={priceRange[1]}
-                            onChange={(e) =>
-                                setPriceRange([priceRange[0], parseInt(e.target.value)])
-                            }
-                        />
+              {/* Price Range */}
+              <label>Price Range ($):</label>
+              <input
+                type="number"
+                min="0"
+                max="200"
+                value={priceRange[0]}
+                onChange={(e) =>
+                  setPriceRange([parseInt(e.target.value), priceRange[1]])
+                }
+              />
+              <span> to </span>
+              <input
+                type="number"
+                min="0"
+                max="200"
+                value={priceRange[1]}
+                onChange={(e) =>
+                  setPriceRange([priceRange[0], parseInt(e.target.value)])
+                }
+              />
 
-                        {/* Search Input */}
-                        <label>Search for a Product:</label>
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="e.g., moisturizer"
-                        />
+              {/* Search Input */}
+              <label>Search for a Product:</label>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="e.g., moisturizer"
+              />
 
-                        <button type="submit">Search</button>
-                    </form>
+              <button type="submit">Search</button>
+            </form>
 
-                    {/* Display Results */}
-                    <h2>Results:</h2>
-                    <div className="results">
-                        <ul>
-                            {results.length > 0 ? (
-                                results.map((product, index) => (
-                                    <li key={index}>
-                                        <strong>{product[0]}</strong> - 🏷️ Brand: {product[3]} - 💰 ${product[2]} - 🔍
-                                        Similarity: {product[1]}
-                                    </li>
-                                ))
-                            ) : (
-                                <li>No results found. Try a different search!</li>
-                            )}
-                        </ul>
-                    </div>
-                </div>
-            );
-        }
+            {/* Display Results */}
+            <h2>Results:</h2>
+            <div className="results">
+              <ul>
+                {results.length > 0 ? (
+                  results.map((product, index) => (
+                    <li key={index}>
+                      <strong>{product[0]}</strong> - 🏷️ Brand: {product[3]} -
+                      💰 ${product[2]} - 🔍 Similarity: {product[1]}
+                    </li>
+                  ))
+                ) : (
+                  <li>No results found. Try a different search!</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        );
+      }
 
-        ReactDOM.render(<SmartSkinApp />, document.getElementById("root"));
+      ReactDOM.render(<SmartSkinApp />, document.getElementById("root"));
     </script>
-</body>
-
+  </body>
 </html>

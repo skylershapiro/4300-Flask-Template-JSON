@@ -28,6 +28,15 @@ def home():
     # Render the main search page
     return render_template('base.html')
 
+@app.route('/brands', methods=['GET'])
+def get_brands():
+   """ Returns a list of unique brand names from the dataset. """
+   try:
+       brands = sorted(df['brand_name'].dropna().unique().tolist())  # Extract unique brands
+       return jsonify({"brands": brands})
+   except Exception as e:
+       return jsonify({"error": str(e)}), 500
+
 @app.route('/search', methods=['POST'])
 def search():
     # Extract user inputs from the form
