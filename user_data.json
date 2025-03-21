@@ -154,5 +154,94 @@
         ],
         "brand_name": "BURBERRY",
         "user_search_input": "perfume"
+    },
+    {
+        "skin_concerns": [
+            "Sensitive Skin"
+        ],
+        "price_range": [
+            0,
+            200
+        ],
+        "brand_name": "Acqua di Parma",
+        "user_search_input": "perfume"
+    },
+    {
+        "skin_concerns": [
+            "Oily skin",
+            "Sensitive Skin"
+        ],
+        "price_range": [
+            0,
+            200
+        ],
+        "brand_name": "ABBOTT",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Oily skin"
+        ],
+        "price_range": [
+            135,
+            200
+        ],
+        "brand_name": "ABBOTT",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            150,
+            200
+        ],
+        "brand_name": "Any",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            0,
+            200
+        ],
+        "brand_name": "Any",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            145,
+            200
+        ],
+        "brand_name": "Any",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Dry Skin"
+        ],
+        "price_range": [
+            145,
+            200
+        ],
+        "brand_name": "Any",
+        "user_search_input": "cream"
+    },
+    {
+        "skin_concerns": [
+            "Oily skin"
+        ],
+        "price_range": [
+            100,
+            200
+        ],
+        "brand_name": "ABBOTT",
+        "user_search_input": "moisturiser"
     }
 ]

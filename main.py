@@ -55,5 +55,6 @@ if st.button("Search SmartSkin!"):
     for product, sim, price in top_5_relevant_docs:
         st.markdown(f"**{product}**  \n💰 **Price:** ${price:.2f}  \n🔍 **Similarity Score:** {sim:.2f}")
         st.write("---")  # Adds a separator for readability
+    st.write(last_user_query)
 
    
