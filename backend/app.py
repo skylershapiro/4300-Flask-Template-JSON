@@ -1,120 +1,90 @@
+from flask import Flask, render_template, request, jsonify
 import json
 import os
-from flask import Flask, render_template, request
-from flask_cors import CORS
-from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
+import nltk
+from flask_cors import CORS
+
 
 # ROOT_PATH for linking with all your files. 
-# Feel free to use a config.py or settings.py with a global export variable
-os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
+os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 
 # Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
 json_file_path = os.path.join(current_directory, 'sephora_product_df.json')
-#print(json_file_path)
 
-# Assuming your JSON data is stored in a file named 'init.json'
+# Load the JSON data into a DataFrame
 with open(json_file_path, 'r') as file:
     dat = json.load(file)
     df = pd.DataFrame(dat)
-    #print(df.iloc[1])
 
 app = Flask(__name__)
 CORS(app)
 
-####### Recieve user input from frontend
-#@app.route?
+@app.route('/')
+def home():
+    # Render the main search page
+    return render_template('base.html')
 
-#######
+@app.route('/search', methods=['POST'])
+def search():
+    # Extract user inputs from the form
+    # skin_concerns = request.form.getlist("skin_concerns")  # Get list of selected skin concerns
+    # brand_name = request.form.get("brand", "Any").lower().strip()
+    # price_min = float(request.form.get("price_min", 0))
+    # price_max = float(request.form.get("price_max", 200))
+    # exact_product_search = request.form.get("query", "").lower().strip()
 
-import nltk
-import pandas as pd
-import json
-import os
+    data = request.get_json()
+    print("Received JSON payload:", data)
+    if not data:
+        return jsonify({"error": "No JSON data received"}), 400
+    skin_concerns = data.get("skin_concerns", [])
+    brand_name = data.get("brand_name", "Any").lower().strip()
+    price_range = data.get("price_range", [0, 200])
+    price_min = float(price_range[0])
+    price_max = float(price_range[1])
+    exact_product_search = data.get("user_search_input", "").lower().strip()
 
-def parse_json():
-    '''This function recieves JSON output from frontend and parses into suitable format to conduct information retrieval'''
-    with open("user_data.json", "r", encoding="utf-8") as file:
-        user_data = json.load(file) 
-    # Convert to structured format
-    parsed_data = []
-    for entry in user_data:
-        parsed_data.append({
-            "skin_concerns": entry.get("skin_concerns", []),  # Default to empty list if missing
-            "brand_name": entry.get("brand_name", ""),
-            "price_range": tuple(entry.get("price_range", [0, 0])),  # Convert to tuple for immutability
-            "query": entry.get("user_search_input", "").lower()  # Normalize search input
-        })
+    # Determine what elements to use in search
+    use_price = (price_min != 0) or (price_max != 200)
+    use_brand = brand_name != "any"
+    use_exact_product_search = exact_product_search != ""
+
+    # Filter the DataFrame based on user inputs
+    filtered_df = df.copy()
+
+    # Filter by price range
+    if use_price:
+        filtered_df = filtered_df[
+            (filtered_df['price_usd'] >= price_min) & (filtered_df['price_usd'] <= price_max)
+        ]
+
+    # Filter by brand name
+    if use_brand:
+        filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip() == brand_name]
+
+    # Find most relevant products according to free-text query
+    relevant_doc_inds = []
+    if use_exact_product_search:
+        for i in range(len(filtered_df['product_name'])):
+            sim = nltk.edit_distance(exact_product_search, filtered_df["product_name"].iloc[i])
+            relevant_doc_inds.append((
+                filtered_df["product_name"].iloc[i],
+                sim,
+                filtered_df["price_usd"].iloc[i]
+            ))
+
+        # Sort by similarity and return top 5 matches
+        top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1])[:5]  # Lower edit distance is better
+    else:
+        
+        # If no search query, return all filtered products
+        top_5_relevant_docs = filtered_df[["product_name", "price_usd"]].values.tolist()[:5]
     
-    return parsed_data
+    return jsonify({"results": top_5_relevant_docs})
 
-
-price_range = (0,200) 
-brand_name = "Sephora Collection"
-exact_product_search = "moisturizer"
-
-
-
-# determine what elements to use in search
-if price_range == (0,200): use_price = False
-if brand_name == "any": use_brand = False
-if exact_product_search == "": use_exact_product_search = False
-
-brand_name = brand_name.lower().strip() # process brand name from user
-df['brand_name'] = df['brand_name'].str.lower().str.strip() # normalize brand_name column
-
-# print("brand_name: ", brand_name)
-# print("use_brand: ", use_brand)
-# print("price_range", price_range)
-# print("exact_product_search: ", exact_product_search)
-
-if use_price: # drop products that don't fit price range
-    df = df[(df['price_usd'] >= price_range[0]) & (df['price_usd'] <= price_range[1])]
-    print(df.shape)
-if use_brand: #drop products that don't fit brand name
-    df = df[df['brand_name'] == brand_name] 
-# find most relevant products according to free-text query
-relevant_doc_inds = []
-i = 0
-for i in range(len(df['product_name'])):
-   #print("document name", d) 
-   sim = nltk.edit_distance(exact_product_search, df["product_name"].iloc[i]) # calculate similarity between query and product name
-   #print("similarity", sim)
-   #if sim > 0.6: # throw out obvious poor matches 
-   relevant_doc_inds.append((df["product_name"].iloc[i], 
-                             sim, 
-                             #"brand_name: "+df["brand_name"].iloc[i], 
-                             df["price_usd"].iloc[i])) # store document and similarity score
-# return top 20 matches
-top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
-print(top_5_relevant_docs)
-## Retrieval code using users search criteria
-
-
-
-
-
-
-# # Sample search using json with pandas
-# def json_search(query):
-#     matches = []
-#     merged_df = pd.merge(episodes_df, reviews_df, left_on='id', right_on='id', how='inner')
-#     matches = merged_df[merged_df['title'].str.lower().str.contains(query.lower())]
-#     matches_filtered = matches[['title', 'descr', 'imdb_rating']]
-#     matches_filtered_json = matches_filtered.to_json(orient='records')
-#     return matches_filtered_json
-
-# @app.route("/")
-# def home():
-#     return render_template('base.html',title="sample html")
-
-# @app.route("/episodes")
-# def episodes_search():
-#     text = request.args.get("title")
-#     return json_search(text)
-
-# if 'DB_NAME' not in os.environ:
-#     app.run(debug=True,host="0.0.0.0",port=5000)
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0", port=5012)

@@ -1,55 +1,242 @@
-<!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSkin - Search</title>
+
+    <!-- Include React & Babel for JSX Support -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px gray;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        select,
+        input,
+        button {
+            margin: 5px;
+            padding: 10px;
+            width: 80%;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .results ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .results li {
+            background: #fff;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px gray;
+        }
+    </style>
+</head>
+
 <body>
-    <div class="full-body-container">
-        <div class="top-text">
-            <div class="google-colors">
-                <h1 id="google-4">4</h1>
-                <h1 id="google-3">3</h1>
-                <h1 id="google-0-1">0</h1>
-                <h1 id="google-0-2">0</h1>
-            </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a Keeping up with the Kardashians episode" id="filter-text-val" onkeyup="filterText()">
-            </div>
-        </div>
-        <div id="answer-box">
+    <div id="root"></div>
 
-        </div>
-    </div>
+    <script type="text/babel">
+        function SmartSkinApp() {
+            const [query, setQuery] = React.useState("");
+            const [results, setResults] = React.useState([]);
+            const [skinConcerns, setSkinConcerns] = React.useState([]);
+            const [brand, setBrand] = React.useState("Any");
+            const [priceRange, setPriceRange] = React.useState([0, 200]);
 
-    <script>
+            // const handleSearch = (e) => {
+            //     e.preventDefault();
 
-        function answerBoxTemplate(title,titleDesc,rating){
-            return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
-                <p class='episode-rating'>IMDB Rating: ${rating}</p>
-            </div>`
+            // Simulated results (Replace with API call when Flask is running)
+            // //   const dummyResults = [
+            // //     ["CeraVe Moisturizing Lotion", 0.95, 14.99],
+            // //     ["Neutrogena Hydro Boost", 0.92, 18.5],
+            // //     ["La Roche-Posay Face Cream", 0.89, 29.99],
+            // //     ["The Ordinary Niacinamide", 0.87, 9.9],
+            // //     ["Paula’s Choice BHA", 0.85, 33.0],
+            // //   ];
+
+            //   setResults(dummyResults);
+            // };
+            const handleSearch = async (e) => {
+                e.preventDefault();
+                const formData = {
+                    skin_concerns: skinConcerns,
+                    price_range: priceRange,
+                    brand_name: brand,
+                    user_search_input: query
+                };
+
+                console.log("Sending JSON payload:", formData); // Debug: Log the payload
+
+                try {
+                    const response = await fetch("http://localhost:5012/search", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData)
+                    });
+
+                    console.log("Response status:", response.status); // Debug: Log the response status
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log("Received data:", data); // Debug: Log the received data
+
+                    setResults(data.results);
+                } catch (error) {
+                    console.error("Error fetching data", error);
+                }
+            };
+            return (
+                <div className="container">
+                    <h1>Welcome to SmartSkin</h1>
+                    <form onSubmit={handleSearch}>
+                        {/* Skin Concerns */}
+                        <label>Skin Concerns:</label>
+                        <select
+                            multiple="multiple"
+                            onChange={(e) =>
+                                setSkinConcerns(
+                                    [...e.target.selectedOptions].map((o) => o.value)
+                                )
+                            }
+                        >
+                            {[
+                                "Acne",
+                                "Dry Skin",
+                                "Oily skin",
+                                "Sensitive Skin",
+                                "Wrinkles",
+                                "Large Pores",
+                                "Redness",
+                                "Dullness",
+                                "Scars",
+                                "Dark Circles",
+                                "Texture",
+                            ].map((concern) => (
+                                <option key={concern} value={concern}>
+                                    {concern}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Brand Selection */}
+                        <label>Brand:</label>
+                        <select onChange={(e) => setBrand(e.target.value)}>
+                            {["Any", "CeraVe", "The Ordinary", "La Roche-Posay"].map(
+                                (brand) => (
+                                    <option key={brand} value={brand}>
+                                        {brand}
+                                    </option>
+                                )
+                            )}
+                        </select>
+
+                        {/* Price Range */}
+                        <label>Price Range ($):</label>
+                        <input
+                            type="number"
+                            min="0"
+                            max="200"
+                            value={priceRange[0]}
+                            onChange={(e) =>
+                                setPriceRange([parseInt(e.target.value), priceRange[1]])
+                            }
+                        />
+                        <span> to </span>
+                        <input
+                            type="number"
+                            min="0"
+                            max="200"
+                            value={priceRange[1]}
+                            onChange={(e) =>
+                                setPriceRange([priceRange[0], parseInt(e.target.value)])
+                            }
+                        />
+
+                        {/* Search Input */}
+                        <label>Search for a Product:</label>
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="e.g., moisturizer"
+                        />
+
+                        <button type="submit">Search</button>
+                    </form>
+
+                    {/* Display Results */}
+                    <h2>Results:</h2>
+                    <div className="results">
+                        <ul>
+                            {results.length > 0 ? (
+                                results.map((product, index) => (
+                                    <li key={index}>
+                                        <strong>{product[0]}</strong> - 💰 ${product[2]} - 🔍
+                                        Similarity: {product[1]}
+                                    </li>
+                                ))
+                            ) : (
+                                <li>No results found. Try a different search!</li>
+                            )}
+                        </ul>
+                    </div>
+                </div>
+            );
         }
 
-        function sendFocus(){
-            document.getElementById('filter-text-val').focus()
-        }
-
-        function filterText(){
-            document.getElementById("answer-box").innerHTML = ""
-            console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-            .then((response) => response.json())
-            .then((data) => data.forEach(row => {
-                
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.title,row.descr,row.imdb_rating)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
-
-        }
-            
+        ReactDOM.render(<SmartSkinApp />, document.getElementById("root"));
     </script>
 </body>
+
+</html>
