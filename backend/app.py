@@ -74,7 +74,8 @@ def search():
             relevant_doc_inds.append((
                 filtered_df["product_name"].iloc[i],
                 sim,
-                filtered_df["price_usd"].iloc[i]
+                filtered_df["price_usd"].iloc[i],
+                filtered_df["brand_name"].iloc[i]
             ))
 
         # Sort by similarity and return top 5 matches
@@ -82,7 +83,7 @@ def search():
     else:
         
         # If no search query, return all filtered products
-        top_5_relevant_docs = filtered_df[["product_name", "price_usd"]].values.tolist()[:5]
+        top_5_relevant_docs = filtered_df[["product_name", "price_usd", "brand_name"]].values.tolist()[:5]
     
     return jsonify({"results": top_5_relevant_docs})
 
