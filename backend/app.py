@@ -88,4 +88,6 @@ def search():
     return jsonify({"results": top_5_relevant_docs})
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5012)
+    # app.run(debug=True, host="0.0.0.0", port=5013)
+    port = int(os.environ.get("PORT", 5013))  # Use PORT if set, otherwise default to 5000
+    app.run(host="0.0.0.0", port=port)
