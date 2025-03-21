@@ -98,5 +98,5 @@ def search():
 
 if __name__ == '__main__':
     # app.run(debug=True, host="0.0.0.0", port=5013)
-    port = int(os.environ.get("PORT", 5013))  # Use PORT if set, otherwise default to 5000
+    port = int(os.environ.get("PORT", 5225))  # Use PORT if set, otherwise default to 5000
     app.run(host="0.0.0.0", port=port)
