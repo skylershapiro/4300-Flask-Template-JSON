@@ -79,7 +79,7 @@ def search():
             ))
 
         # Sort by similarity and return top 5 matches
-        top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1])[:5]  # Lower edit distance is better
+        top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]  # Lower edit distance is better
     else:
         
         # If no search query, return all filtered products
