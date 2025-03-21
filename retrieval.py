@@ -29,18 +29,18 @@ def parse_json():
     return parsed_data
 
 
-# tags = ["moisturizer"] 
+tags = ["moisturizer"] 
 # '''
 # Type: List of strings
 # Currently written as 'Skin Concerns' in frontend. '''
-
-# price_range = (0,200) 
+price_range = (0,200) 
+brand_name = "Sephora Collection"
 # '''
 # Type: Tuple(int1, int2) with int1 <= int2
 # WHEN NOT SET BY USER, default will be 0-200, 
 # If this is the case, maybe we can just ignore price-range during retrieval? '''
 
-# exact_product_search = 'CeraVe Daily Moisturizing Lotion for Dry Skin, Body Lotion & Face Moisturizer with Hyaluronic Acid and Ceramides'
+exact_product_search = 'CeraVe Daily Moisturizing Lotion for Dry Skin, Body Lotion & Face Moisturizer with Hyaluronic Acid and Ceramides'
 # '''
 # Type: String
 # User looking for specific product, free-text search term
@@ -49,68 +49,68 @@ def parse_json():
 # logic to determine how to conduct retrieval
 last_user_query = parse_json()[-1]
 price_range = last_user_query["price_range"]
+# print("this is the price_range", price_range[0])
+# print("this is the price_range", price_range[1])
 brand_name = last_user_query["brand_name"]
+# print("this is the last_user_query", brand_name)
 exact_product_search = last_user_query["query"]
+# print("this is the exact_product_search", exact_product_search)
 tags = last_user_query["skin_concerns"]
-print(last_user_query)
-print("price range", price_range, type(price_range))
+# print("this is the tag", tags)
 
-use_tags = False
-use_price_range = False
-use_brand = False
-use_exact_product_search = False
 
-if tags: use_tags = True
-if price_range != (0,200): use_price_range = True
-if brand_name: use_brand = True
-if exact_product_search != "": use_exact_product_search = True
+# use_tags = False
+# use_price_range = False
+# use_brand = False
+# use_exact_product_search = False
+
+# if tags != []: use_tags = True
+# if price_range != (0,200): use_price_range = True
+if brand_name != "any": use_brand = False
+# if exact_product_search != "": use_exact_product_search = True
 
 
 #Perform retreival using criteria
 #df = pd.read_csv("/Users/skylershapiro/cs4300/4300-Flask-Template-JSON/sephora_product_df.csv")
-df = pd.read_csv("sephora_product_df.csv")
-print("PRICE RANGE LOWER0000000000000000", price_range[0])
-print("pricerangeuper00000000000000", price_range[1])
-print("first price usd0000000000", df['price_usd'][0])
-print("second price usd0000000000", df['price_usd'][1])
+# tags = ["moisturizer"] 
+# price_range = (0,200) 
+# brand_name = "sephora collection"
+# exact_product_search = "moisturizer"
 
+#process brand_name column
+
+brand_name = brand_name.lower().strip()
+print("brand_name: ", brand_name)
+print("use_brand: ", use_brand)
+print("price_range", price_range)
+print("exact_product_search: ", exact_product_search)
+
+df = pd.read_csv("sephora_product_df.csv")
+df['brand_name'] = df['brand_name'].str.lower().str.strip()
+#print(df['brand_name'][:10])
+#print(df['price_usd'].head(20))
+# print(df[df['price_usd'] >= price_range[0]])
+use_price_range = True
 if use_price_range: # drop products that don't fit price range
     df = df[(df['price_usd'] >= price_range[0]) & (df['price_usd'] <= price_range[1])]
+    print(df.shape)
 if use_brand: #drop products that don't fit brand name
     df = df[df['brand_name'] == brand_name] 
-
 # find most relevant products according to free-text query
 relevant_doc_inds = []
 i = 0
-for d in df['product_name']:
+for i in range(len(df['product_name'])):
    #print("document name", d) 
-   i += 1 
-   sim = nltk.edit_distance(exact_product_search, d) # calculate similarity between query and product name
+   sim = nltk.edit_distance(exact_product_search, df["product_name"].iloc[i]) # calculate similarity between query and product name
    #print("similarity", sim)
-   if sim > 0.6: # throw out obvious poor matches
-       relevant_doc_inds.append((d, sim, df.loc[df['product_name'] == d, 'price_usd'].values[0])) # store document and similarity score
-
+   #if sim > 0.6: # throw out obvious poor matches 
+   relevant_doc_inds.append((df["product_name"].iloc[i], 
+                             sim, 
+                             #"brand_name: "+df["brand_name"].iloc[i], 
+                             df["price_usd"].iloc[i])) # store document and similarity score
 # return top 20 matches
 top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
-#print(top_5_relevant_docs)
+print(top_5_relevant_docs)
 
 
-
-# # find 3 most relevant documents using levenshtein edit distance between user free-text queries and product names
-# # read in data
-# df = pd.read_csv("skincare_products_clean.csv")
-# df = df[["product_name", "product_type", "price"]]
-
-# relevant_doc_inds = []
-# i = 0
-# for d in df['product_name']:
-#    i += 1 
-#    sim = nltk.edit_distance(exact_product_search, d.split()) # calculate similiarty between query and product name
-#    if sim > 0.6: # throw out obvious poor matches
-#        relevant_doc_inds.append((d, sim)) # store document and similarity score
-
-# # return top 20 matches
-# top_3_relevant_docs = sorted(relevant_doc_inds,  key=lambda x: x[1])[-3:]
-# #print(top_3_relevant_docs)
-       
 
