@@ -27,6 +27,7 @@ skin_concerns = st.multiselect("Skin Concerns", ["Acne", "Dry Skin", "Oily skin"
 #brand names
 df = pd.read_csv("sephora_product_df.csv")
 brands = sorted(df['brand_name'].dropna().unique().tolist())
+brands.insert('Any', 0)
 
 brand_name = st.selectbox("Brands", brands)
 st.write("Selected Brand:", brand_name) 
