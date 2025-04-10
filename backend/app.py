@@ -54,6 +54,7 @@ def search():
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
     skin_concerns = data.get("skin_concerns", [])
+    skin_type = data.get("skin_type", "normal").lower().strip()
     brand_name = data.get("brand_name", "Any").lower().strip()
     price_range = data.get("price_range", [0, 200])
     price_min = float(price_range[0])

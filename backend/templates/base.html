@@ -89,27 +89,14 @@
         const [brand, setBrand] = React.useState("Any");
         const [brands, setBrands] = React.useState(["Any"]);
         const [priceRange, setPriceRange] = React.useState([0, 200]);
+        const [skinType, setSkinType] = React.useState("normal"); // New state
 
-        // const handleSearch = (e) => {
-        //     e.preventDefault();
-
-        // Simulated results (Replace with API call when Flask is running)
-        // //   const dummyResults = [
-        // //     ["CeraVe Moisturizing Lotion", 0.95, 14.99],
-        // //     ["Neutrogena Hydro Boost", 0.92, 18.5],
-        // //     ["La Roche-Posay Face Cream", 0.89, 29.99],
-        // //     ["The Ordinary Niacinamide", 0.87, 9.9],
-        // //     ["Paula’s Choice BHA", 0.85, 33.0],
-        // //   ];
-
-        //   setResults(dummyResults);
-        // };
         React.useEffect(() => {
           fetch(window.location.href + "/brands")
             .then((response) => response.json())
             .then((data) => {
               if (data.brands) {
-                setBrands(["Any", ...data.brands]); // Add "Any" as default option
+                setBrands(["Any", ...data.brands]);
               }
             })
             .catch((error) => console.error("Error fetching brands:", error));
@@ -122,9 +109,10 @@
             price_range: priceRange,
             brand_name: brand,
             user_search_input: query,
+            skin_type: skinType, // Include skin type in the payload
           };
 
-          console.log("Sending JSON payload:", formData); // Debug: Log the payload
+          console.log("Sending JSON payload:", formData);
 
           try {
             const response = await fetch(window.location.href + "/search", {
@@ -133,20 +121,21 @@
               body: JSON.stringify(formData),
             });
 
-            console.log("Response status:", response.status); // Debug: Log the response status
+            console.log("Response status:", response.status);
 
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log("Received data:", data); // Debug: Log the received data
+            console.log("Received data:", data);
 
             setResults(data.results);
           } catch (error) {
             console.error("Error fetching data", error);
           }
         };
+
         return (
           <div className="container">
             <h1>Welcome to SmartSkin</h1>
@@ -163,8 +152,6 @@
               >
                 {[
                   "Acne",
-                  "Dry Skin",
-                  "Oily skin",
                   "Sensitive Skin",
                   "Wrinkles",
                   "Large Pores",
@@ -176,6 +163,16 @@
                 ].map((concern) => (
                   <option key={concern} value={concern}>
                     {concern}
+                  </option>
+                ))}
+              </select>
+
+              {/* Skin Type */}
+              <label>Skin Type:</label>
+              <select value={skinType} onChange={(e) => setSkinType(e.target.value)}>
+                {["normal", "oily", "dry", "combination"].map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
                   </option>
                 ))}
               </select>
