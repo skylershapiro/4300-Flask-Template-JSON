@@ -27,5 +27,5 @@ for (product_name, brand_name), reviews in grouped_reviews.items():
     })
 
 # Step 5: Save as JSON
-with open("grouped_reviews.json", "w") as f:
+with open("review_terms_per_product.json", "w") as f:
     json.dump(output, f, indent=2)
