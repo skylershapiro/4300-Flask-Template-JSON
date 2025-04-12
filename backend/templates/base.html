@@ -86,10 +86,13 @@
         const [query, setQuery] = React.useState("");
         const [results, setResults] = React.useState([]);
         const [skinConcerns, setSkinConcerns] = React.useState([]);
-        const [brand, setBrand] = React.useState("Any");
+        const [brand, setBrand] = React.useState([]);
         const [brands, setBrands] = React.useState(["Any"]);
         const [priceRange, setPriceRange] = React.useState([0, 200]);
         const [skinType, setSkinType] = React.useState("normal"); // New state
+        const [restrictions, setRestrictions] = React.useState([]);
+        const [ingredient, setIngredient] = React.useState([]);
+        const [ingredients, setIngredients] = React.useState(["Any"]);
 
         React.useEffect(() => {
           fetch(window.location.href + "/brands")
@@ -102,14 +105,27 @@
             .catch((error) => console.error("Error fetching brands:", error));
         }, []);
 
+        React.useEffect(() => {
+          fetch(window.location.href + "/ingredients")
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.ingredients) {
+                setIngredients(["Any", ...data.ingredients]);
+              }
+            })
+            .catch((error) => console.error("Error fetching ingredients:", error));
+        }, []);
+
         const handleSearch = async (e) => {
           e.preventDefault();
           const formData = {
             skin_concerns: skinConcerns,
             price_range: priceRange,
-            brand_name: brand,
+            brand_names: brand,
             user_search_input: query,
-            skin_type: skinType, // Include skin type in the payload
+            skin_type: skinType,
+            restrictions: restrictions,
+            ingredients: ingredient,
           };
 
           console.log("Sending JSON payload:", formData);
@@ -177,10 +193,45 @@
                 ))}
               </select>
 
+              {/* Restrictions */}
+              <label>Restrictions:</label>
+              <select
+                multiple="multiple"
+                onChange={(e) =>
+                  setRestrictions([...e.target.selectedOptions].map((o) => o.value))
+                }
+              >
+                {["Vegan", "Cruelty-Free", "Fragrance-Free", "Paraben-Free", "Gluten-Free"].map((restriction) => (
+                  <option key={restriction} value={restriction}>
+                    {restriction}
+                  </option>
+                ))}
+              </select>
+
+              {/* Ingredient Selection */}
+              <label>Ingredient:</label>
+              <select
+                multiple="multiple"
+                onChange={(e) =>
+                  setIngredient([...e.target.selectedOptions].map((o) => o.value))
+                }
+              >
+                {ingredients.map((ingredient) => (
+                  <option key={ingredient} value={ingredient}>
+                    {ingredient}
+                  </option>
+                ))}
+              </select>
+
               {/* Brand Selection */}
               <label>Brand:</label>
-              <select onChange={(e) => setBrand(e.target.value)}>
-                {brands.map((brand) => (
+              <select
+                multiple="multiple"
+                onChange={(e) =>
+                  setBrand([...e.target.selectedOptions].map((o) => o.value))
+                }
+              >
+              {brands.map((brand) => (
                   <option key={brand} value={brand}>
                     {brand}
                   </option>
