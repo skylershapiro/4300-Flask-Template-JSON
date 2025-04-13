@@ -294,9 +294,11 @@
                 {results.length > 0 ? (
                   results.map((product, index) => (
                     <li key={index}>
-                      <strong>{product[0]}</strong> - 🏷️ Brand: {product[3]} -
-                      💰 ${product[2]}
-                    </li>
+                     <strong>{product[0]}</strong> - 🏷️ Brand: {product[3]} - 💰 ${product[2]}<br />
+                     ⭐ Rating: {product[4]}<br />
+                     🔑 Important Terms: {product[5]}<br />
+
+                   </li>
                   ))
                 ) : (
                   <li>No results found. Try a different search!</li>

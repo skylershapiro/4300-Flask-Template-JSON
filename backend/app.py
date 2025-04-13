@@ -16,12 +16,20 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'filtered_sephora_products.json')
+json_file_path_sephora = os.path.join(current_directory, 'filtered_sephora_products.json')
+json_file_path_reviews = os.path.join(current_directory, 'review_terms_per_product.json')
+
 
 # Load the JSON data into a DataFrame
-with open(json_file_path, 'r') as file:
-    dat = json.load(file)
-    df = pd.DataFrame(dat)
+with open(json_file_path_sephora, 'r') as file:
+   dat_sephora = json.load(file)
+   df_sephora = pd.DataFrame(dat_sephora)
+
+
+with open(json_file_path_reviews, 'r') as file:
+   dat_reviews = json.load(file)
+   df_reviews = pd.DataFrame(dat_reviews)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -35,7 +43,7 @@ def home():
 def get_ingredients():
    """ Returns a list of unique ingredients from the dataset. """
    try:
-       ingredients = sorted(df['ingredients'].dropna().unique().tolist())  # Extract unique brands
+       ingredients = sorted(df_sephora['ingredients'].dropna().unique().tolist())  # Extract unique brands
        return jsonify({"ingredients": ingredients})
    except Exception as e:
        return jsonify({"error": str(e)}), 500
@@ -44,7 +52,7 @@ def get_ingredients():
 def get_brands():
    """ Returns a list of unique brand names from the dataset. """
    try:
-       brands = sorted(df['brand_name'].dropna().unique().tolist())  # Extract unique brands
+       brands = sorted(df_sephora['brand_name'].dropna().unique().tolist())  # Extract unique brands
        return jsonify({"brands": brands})
    except Exception as e:
        return jsonify({"error": str(e)}), 500
@@ -87,7 +95,7 @@ def search():
     use_exact_product_search = exact_product_search != ""
 
     # Filter the DataFrame based on user inputs
-    filtered_df = df.copy()
+    filtered_df = df_sephora.copy()
 
     # Filter by price range
     if use_price:
@@ -124,8 +132,28 @@ def search():
             [row["product_name"], 0, row["price_usd"], row["brand_name"]]
             for _, row in filtered_df.head(5).iterrows()
         ]
-            
-    return jsonify({"results": top_5_relevant_docs})
+    
+    top_5_relevant_docs_w_review = []
+    for doc in top_5_relevant_docs:
+       product_name = doc[0]
+       product = df_sephora[df_sephora['product_name'] == product_name]
+       if not product.empty and not np.isnan(product['rating'].iloc[0]):
+        product_rating = round(product['rating'].iloc[0], 2)
+       else:
+        product_rating = ['N/A'] 
+       
+       reviews = df_reviews[df_reviews['product_name'] == product_name]
+       if not reviews.empty and len(reviews['important_terms'].iloc[0]) > 0:
+        product_terms = reviews['important_terms'].iloc[0][:3]
+        product_terms = ", ".join(product_terms)
+       else:
+        product_terms = ["No recent reviews for this product"] 
+
+       top_5_relevant_docs_w_review.append([
+       product_name, doc[1], doc[2], doc[3], product_rating, product_terms
+       ])
+
+    return jsonify({"results": top_5_relevant_docs_w_review})
 
 if __name__ == '__main__':
     # app.run(debug=True, host="0.0.0.0", port=5013)
