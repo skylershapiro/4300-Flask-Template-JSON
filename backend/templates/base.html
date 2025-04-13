@@ -113,7 +113,9 @@
                 setIngredients(["Any", ...data.ingredients]);
               }
             })
-            .catch((error) => console.error("Error fetching ingredients:", error));
+            .catch((error) =>
+              console.error("Error fetching ingredients:", error)
+            );
         }, []);
 
         const handleSearch = async (e) => {
@@ -185,7 +187,10 @@
 
               {/* Skin Type */}
               <label>Skin Type:</label>
-              <select value={skinType} onChange={(e) => setSkinType(e.target.value)}>
+              <select
+                value={skinType}
+                onChange={(e) => setSkinType(e.target.value)}
+              >
                 {["normal", "oily", "dry", "combination"].map((type) => (
                   <option key={type} value={type}>
                     {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -198,10 +203,18 @@
               <select
                 multiple="multiple"
                 onChange={(e) =>
-                  setRestrictions([...e.target.selectedOptions].map((o) => o.value))
+                  setRestrictions(
+                    [...e.target.selectedOptions].map((o) => o.value)
+                  )
                 }
               >
-                {["Vegan", "Cruelty-Free", "Fragrance-Free", "Paraben-Free", "Gluten-Free"].map((restriction) => (
+                {[
+                  "Vegan",
+                  "Cruelty-Free",
+                  "Fragrance-Free",
+                  "Paraben-Free",
+                  "Gluten-Free",
+                ].map((restriction) => (
                   <option key={restriction} value={restriction}>
                     {restriction}
                   </option>
@@ -213,7 +226,9 @@
               <select
                 multiple="multiple"
                 onChange={(e) =>
-                  setIngredient([...e.target.selectedOptions].map((o) => o.value))
+                  setIngredient(
+                    [...e.target.selectedOptions].map((o) => o.value)
+                  )
                 }
               >
                 {ingredients.map((ingredient) => (
@@ -231,7 +246,7 @@
                   setBrand([...e.target.selectedOptions].map((o) => o.value))
                 }
               >
-              {brands.map((brand) => (
+                {brands.map((brand) => (
                   <option key={brand} value={brand}>
                     {brand}
                   </option>
@@ -280,7 +295,7 @@
                   results.map((product, index) => (
                     <li key={index}>
                       <strong>{product[0]}</strong> - 🏷️ Brand: {product[3]} -
-                      💰 ${product[2]} - 🔍 Similarity: {product[1]}
+                      💰 ${product[2]}
                     </li>
                   ))
                 ) : (
