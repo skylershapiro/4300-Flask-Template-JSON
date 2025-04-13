@@ -49,6 +49,13 @@ def get_brands():
    except Exception as e:
        return jsonify({"error": str(e)}), 500
 
+def jaccard_similarity(a, b):
+    """Calculate Jaccard similarity between two strings."""
+    set_a = set(a.lower().split())
+    set_b = set(b.lower().split())
+    return len(set_a & set_b) / len(set_a | set_b) if len(set_a | set_b) > 0 else 0
+
+
 @app.route('/search', methods=['POST'])
 def search():
     # Extract user inputs from the form
@@ -94,20 +101,21 @@ def search():
         filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
         # filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip() == brand_name]
 
-    # Find most relevant products according to free-text query
     relevant_doc_inds = []
     if use_exact_product_search:
         for i in range(len(filtered_df['product_name'])):
-            sim = nltk.edit_distance(exact_product_search, filtered_df["product_name"].iloc[i])
+            product_name = filtered_df["product_name"].iloc[i]
+            sim = jaccard_similarity(exact_product_search, product_name)
             relevant_doc_inds.append((
-                filtered_df["product_name"].iloc[i],
-                sim,
-                filtered_df["price_usd"].iloc[i],
+                product_name,
+                round(sim, 4),
+                float(filtered_df["price_usd"].iloc[i]),
                 filtered_df["brand_name"].iloc[i]
             ))
-
+            
         # Sort by similarity and return top 5 matches
-        top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1])[:5]  # Lower edit distance is better
+        # top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1])[:5]  # Lower edit distance is better
+        top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
     else:
         
         # If no search query, return all filtered products
