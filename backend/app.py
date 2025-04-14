@@ -7,6 +7,7 @@ from flask_cors import CORS
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import ast
 
 
 # ROOT_PATH for linking with all your files. 
@@ -65,6 +66,35 @@ def jaccard_similarity(a, b):
     set_b = set(b.lower().split())
     return len(set_a & set_b) / len(set_a | set_b) if len(set_a | set_b) > 0 else 0
 
+def highlight_matches_skin_type(row, user_skin_type):
+    highlights = row.get('highlights')
+    product_name = row.get('product_name', 'Unknown')
+
+    # If user has normal skin and no highlight is provided, include the product
+    if not highlights:
+        return user_skin_type == "normal"
+ 
+    if isinstance(highlights, str):
+        try:
+            highlights = ast.literal_eval(highlights)
+        except (ValueError, SyntaxError):
+            print(f"[ERROR] Failed to parse highlights for {product_name}")
+            return user_skin_type == "normal"
+
+    found_best_for = False
+    for h in highlights:
+        if isinstance(h, str) and "best for" in h.lower():
+            found_best_for = True
+            try:
+                tag_section = h.lower().split("best for", 1)[1].strip()
+                if user_skin_type.lower() in tag_section:
+                    print(f"[MATCH] {product_name}: matched '{user_skin_type}' in → {h}")
+                    return True
+            except IndexError:
+                continue
+
+    # If no "Best for" was found and user has normal skin, include it
+    return not found_best_for and user_skin_type == "normal"
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -110,6 +140,15 @@ def search():
         brand_names = [name.lower().strip() for name in brand_names]  # normalize the list
         filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
         # filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip() == brand_name]
+
+    print(f"Skin type selected: {skin_type}")
+    print("Applying highlight-based filtering...")
+
+    if skin_type:
+        filtered_df = filtered_df[
+        filtered_df.apply(lambda row: highlight_matches_skin_type(row, skin_type), axis=1)
+    ]
+   
 
     relevant_doc_inds = []
     if use_exact_product_search:
