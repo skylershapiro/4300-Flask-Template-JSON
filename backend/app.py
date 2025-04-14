@@ -43,7 +43,9 @@ def home():
 def get_ingredients():
    """ Returns a list of unique ingredients from the dataset. """
    try:
-       ingredients = sorted(df_sephora['ingredients'].dropna().unique().tolist())  # Extract unique brands
+       flat_list = [item for sublist in df_sephora.ingredients_clean.dropna() for item in sublist]
+       ingredients = list(set(flat_list))
+    #    ingredients = sorted(df_sephora['ingredients'].dropna().unique().tolist())  # Extract unique brands
        return jsonify({"ingredients": ingredients})
    except Exception as e:
        return jsonify({"error": str(e)}), 500
