@@ -143,6 +143,11 @@ def search():
         product_rating = round(product['rating'].iloc[0], 2)
        else:
         product_rating = ['N/A'] 
+       if not product.empty and product['highlights'].iloc[0]:
+        product_highlights = product['highlights']
+        product_highlights = ", ".join(product_highlights.astype(str))
+       else:
+        product_highlights = ["No highlights for this product"]
        
        reviews = df_reviews[df_reviews['product_name'] == product_name]
        if not reviews.empty and len(reviews['important_terms'].iloc[0]) > 0:
@@ -152,7 +157,7 @@ def search():
         product_terms = ["No recent reviews for this product"] 
 
        top_5_relevant_docs_w_review.append([
-       product_name, doc[1], doc[2], doc[3], product_rating, product_terms
+       product_name, doc[1], doc[2], doc[3], product_rating, product_terms, product_highlights
        ])
 
     return jsonify({"results": top_5_relevant_docs_w_review})
