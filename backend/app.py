@@ -70,16 +70,16 @@ def highlight_matches_skin_type(row, user_skin_type):
     highlights = row.get('highlights')
     product_name = row.get('product_name', 'Unknown')
 
-    # If user has normal skin and no highlight is provided, include the product
-    if not highlights:
-        return user_skin_type == "normal"
- 
+    # If highlights are empty include the product
+    if highlights == "":
+        return True
+
     if isinstance(highlights, str):
         try:
             highlights = ast.literal_eval(highlights)
         except (ValueError, SyntaxError):
             print(f"[ERROR] Failed to parse highlights for {product_name}")
-            return user_skin_type == "normal"
+            return True  
 
     found_best_for = False
     for h in highlights:
@@ -93,8 +93,8 @@ def highlight_matches_skin_type(row, user_skin_type):
             except IndexError:
                 continue
 
-    # If no "Best for" was found and user has normal skin, include it
-    return not found_best_for and user_skin_type == "normal"
+    # If no 'Best for' match and highlights exist, allow only if no 'Best for' was found
+    return not found_best_for
 
 @app.route('/search', methods=['POST'])
 def search():
