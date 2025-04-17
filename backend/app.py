@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import ast
+import re
 
 
 # ROOT_PATH for linking with all your files. 
@@ -96,6 +97,43 @@ def highlight_matches_skin_type(row, user_skin_type):
     # If no 'Best for' match and highlights exist, allow only if no 'Best for' was found
     return not found_best_for
 
+
+def highlight_matches_skin_concerns(row, user_skin_concerns):
+    highlights = row.get('highlights')
+    product_name = row.get('product_name', 'Unknown')
+
+    # If highlights are empty, include the product
+    if highlights == "":
+        print(f"✅ {product_name}: No highlights — keeping.")
+        return True
+
+    # Convert string representation to list
+    if isinstance(highlights, str):
+        try:
+            highlights = ast.literal_eval(highlights)
+        except (ValueError, SyntaxError):
+            print(f"[ERROR] Could not parse highlights for {product_name}")
+            return True
+
+    found_good_for = False
+    for h in highlights:
+        if isinstance(h, str) and "good for" in h.lower():
+            found_good_for = True
+            tag_section = h.lower().split("good for", 1)[1].strip(": ").lower()
+            for concern in user_skin_concerns:
+                concern_lower = concern.lower()
+                if concern_lower in tag_section:
+                    print(f"[MATCH] {product_name}: matched '{concern}' in → '{tag_section}'")
+                    return True
+
+    if not found_good_for:
+        print(f"✅ {product_name}: No 'Good for' tags — keeping.")
+    else:
+        print(f"⛔ {product_name}: No match for concerns → {user_skin_concerns}")
+
+    return not found_good_for
+
+
 @app.route('/search', methods=['POST'])
 def search():
     # Extract user inputs from the form
@@ -148,7 +186,10 @@ def search():
         filtered_df = filtered_df[
         filtered_df.apply(lambda row: highlight_matches_skin_type(row, skin_type), axis=1)
     ]
-   
+    
+    if skin_concerns:
+        print(f"📋 Filtering by concerns: {skin_concerns}")
+        filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_skin_concerns(row, skin_concerns), axis=1)]
 
     relevant_doc_inds = []
     if use_exact_product_search:
