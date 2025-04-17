@@ -13,109 +13,20 @@
     <!-- Styling -->
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap");
-
-      body {
-        margin: 0;
-        font-family: "Futura", "Nunito", sans-serif;
-        background: linear-gradient(to bottom right, #eac9f4, #e7e2f7);
-        color: #333;
-      }
-
-      .container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px 20px;
-      }
-
-      h1 {
-        font-size: 3rem;
-        font-weight: bold;
-        text-align: center;
-        position: relative;
-      }
-
-      .cursor-icon {
-        width: 40px;
-        height: auto;
-        position: relative;
-        top: -8px;
-        margin-left: 8px;
-        animation: bounce 1.5s infinite;
-      }
-
-      @keyframes bounce {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-6px);
-        }
-      }
-
-      p.tagline {
-        text-align: center;
-        margin-top: -15px;
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      form {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-top: 30px;
-      }
-
-      .full-width {
-        grid-column: span 2;
-      }
-
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 8px;
-      }
-
-      select,
-      input {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 0 0 3px #e7e2f7 inset;
-      }
-
-      button {
-        grid-column: span 2;
-        padding: 15px;
-        border: none;
-        border-radius: 25px;
-        background-color: #8eafff;
-        color: black;
-        font-size: 1.3rem;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-top: 20px;
-      }
-
-      button:hover {
-        background-color: #b7caee;
-      }
-
-      .results {
-        margin-top: 40px;
-      }
-
-      .results li {
-        background: rgb(241, 225, 241);
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 15px;
-        text-align: left;
-      }
+      body { margin: 0; font-family: "Futura", "Nunito", sans-serif; background: linear-gradient(to bottom right, #eac9f4, #e7e2f7); color: #333; }
+      .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+      h1 { font-size: 3rem; font-weight: bold; text-align: center; position: relative; }
+      .cursor-icon { width: 40px; height: auto; position: relative; top: -8px; margin-left: 8px; animation: bounce 1.5s infinite; }
+      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      p.tagline { text-align: center; margin-top: -15px; font-size: 1rem; font-weight: 500; }
+      form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+      .full-width { grid-column: span 2; }
+      label { display: block; font-weight: bold; margin-bottom: 8px; }
+      select, input { width: 100%; padding: 10px; border: none; border-radius: 15px; box-shadow: 0 0 0 3px #e7e2f7 inset; }
+      button { grid-column: span 2; padding: 15px; border: none; border-radius: 25px; background-color: #8eafff; color: black; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 20px; }
+      button:hover { background-color: #b7caee; }
+      .results { margin-top: 40px; }
+      .results li { background: rgb(241, 225, 241); border-radius: 10px; padding: 15px; box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: left; }
     </style>
   </head>
 
@@ -134,188 +45,83 @@
         const [restrictions, setRestrictions] = React.useState([]);
         const [ingredient, setIngredient] = React.useState([]);
         const [ingredients, setIngredients] = React.useState(["Any"]);
+        const [brandSearch, setBrandSearch] = React.useState("");
+        const [ingredientSearch, setIngredientSearch] = React.useState("");
 
         React.useEffect(() => {
-          fetch(window.location.href + "/brands")
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.brands) setBrands(["Any", ...data.brands]);
-            });
-
-          fetch(window.location.href + "/ingredients")
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.ingredients)
-                setIngredients(["Any", ...data.ingredients]);
-            });
+          fetch(window.location.href + "/brands").then((res) => res.json()).then((data) => {
+            if (data.brands) setBrands(["Any", ...data.brands]);
+          });
+          fetch(window.location.href + "/ingredients").then((res) => res.json()).then((data) => {
+            if (data.ingredients) setIngredients(["Any", ...data.ingredients]);
+          });
         }, []);
 
         const handleSearch = async (e) => {
           e.preventDefault();
-          const formData = {
-            skin_concerns: skinConcerns,
-            price_range: priceRange,
-            brand_names: brand,
-            user_search_input: query,
-            skin_type: skinType,
-            restrictions: restrictions,
-            ingredients: ingredient,
-          };
-
-          const response = await fetch(window.location.href + "/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
-
+          const formData = { skin_concerns: skinConcerns, price_range: priceRange, brand_names: brand, user_search_input: query, skin_type: skinType, restrictions: restrictions, ingredients: ingredient };
+          const response = await fetch(window.location.href + "/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
           const data = await response.json();
           setResults(data.results);
         };
+
+        const filteredBrands = brands.filter(b => b.toLowerCase().includes(brandSearch.toLowerCase()));
+        const filteredIngredients = ingredients.filter(i => i.toLowerCase().includes(ingredientSearch.toLowerCase()));
 
         return (
           <div className="container">
             <h1>
               SmartSkin
-              <img
-                src="/static/images/cursor.png"
-                alt="cursor"
-                className="cursor-icon"
-              />
+              <img src="/static/images/cursor.png" alt="cursor" className="cursor-icon" />
             </h1>
-            <p className="tagline">
-              find the right product for your skin, budget and goals in seconds!
-            </p>
+            <p className="tagline">find the right product for your skin, budget and goals in seconds!</p>
             <form onSubmit={handleSearch}>
               <div>
                 <label>Skin Concerns:</label>
-                <select
-                  multiple
-                  onChange={(e) =>
-                    setSkinConcerns(
-                      [...e.target.selectedOptions].map((o) => o.value)
-                    )
-                  }
-                >
-                  {[
-                    "Acne",
-                    "Sensitive Skin",
-                    "Wrinkles",
-                    "Large Pores",
-                    "Redness",
-                    "Dullness",
-                    "Scars",
-                    "Dark Circles",
-                    "Texture",
-                  ].map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
+                <select multiple onChange={(e) => setSkinConcerns([...e.target.selectedOptions].map(o => o.value))}>
+                  {["Acne", "Sensitive Skin", "Wrinkles", "Large Pores", "Redness", "Dullness", "Scars", "Dark Circles", "Texture"].map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div>
                 <label>Skin Type:</label>
-                <select
-                  value={skinType}
-                  onChange={(e) => setSkinType(e.target.value)}
-                >
-                  {["normal", "oily", "dry", "combination"].map((t) => (
-                    <option key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </option>
-                  ))}
+                <select value={skinType} onChange={(e) => setSkinType(e.target.value)}>
+                  {["normal", "oily", "dry", "combination"].map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
                 </select>
               </div>
 
               <div>
                 <label>Restrictions:</label>
-                <select
-                  multiple
-                  onChange={(e) =>
-                    setRestrictions(
-                      [...e.target.selectedOptions].map((o) => o.value)
-                    )
-                  }
-                >
-                  {[
-                    "Vegan",
-                    "Cruelty-Free",
-                    "Fragrance-Free",
-                    "Paraben-Free",
-                    "Gluten-Free",
-                  ].map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
+                <select multiple onChange={(e) => setRestrictions([...e.target.selectedOptions].map(o => o.value))}>
+                  {["Vegan", "Cruelty-Free", "Fragrance-Free", "Paraben-Free", "Gluten-Free"].map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
 
               <div>
                 <label>Ingredients:</label>
-                <select
-                  multiple
-                  onChange={(e) =>
-                    setIngredient(
-                      [...e.target.selectedOptions].map((o) => o.value)
-                    )
-                  }
-                >
-                  {ingredients.map((i) => (
-                    <option key={i} value={i}>
-                      {i}
-                    </option>
-                  ))}
+                <input type="text" placeholder="Search Ingredients..." value={ingredientSearch} onChange={(e) => setIngredientSearch(e.target.value)} />
+                <select multiple onChange={(e) => setIngredient([...e.target.selectedOptions].map(o => o.value))}>
+                  {filteredIngredients.map((i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
 
               <div>
                 <label>Brand:</label>
-                <select
-                  multiple
-                  onChange={(e) =>
-                    setBrand([...e.target.selectedOptions].map((o) => o.value))
-                  }
-                >
-                  {brands.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
+                <input type="text" placeholder="Search Brands..." value={brandSearch} onChange={(e) => setBrandSearch(e.target.value)} />
+                <select multiple onChange={(e) => setBrand([...e.target.selectedOptions].map(o => o.value))}>
+                  {filteredBrands.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
 
               <div>
                 <label>Price Range ($):</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="200"
-                  value={priceRange[0]}
-                  onChange={(e) =>
-                    setPriceRange([parseInt(e.target.value), priceRange[1]])
-                  }
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="200"
-                  value={priceRange[1]}
-                  onChange={(e) =>
-                    setPriceRange([priceRange[0], parseInt(e.target.value)])
-                  }
-                />
+                <input type="number" min="0" max="200" value={priceRange[0]} onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])} />
+                <input type="number" min="0" max="200" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])} />
               </div>
 
               <div className="full-width">
                 <label>Search for a Product:</label>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="e.g., moisturizer"
-                />
+                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g., moisturizer" />
               </div>
 
               <button type="submit">Search!</button>
@@ -323,17 +129,14 @@
 
             <div className="results">
               <ul>
-                {results.length > 0 ? (
-                  results.map((product, i) => (
-                    <li key={i}>
-                      <strong>{product[0]}</strong> — 🏷️ Brand: {product[3]} —
-                      💰 ${product[2]}
-                      <br /> {product[4]}
-                      <br /> {product[5]}
-                      <br /> {product[6]}
-                    </li>
-                  ))
-                ) : (
+                {results.length > 0 ? results.map((product, i) => (
+                  <li key={i}>
+                    <strong>{product[0]}</strong> — 🏷️ Brand: {product[3]} — 💰 ${product[2]}<br />
+                    {product[4]}<br />
+                    {product[5]}<br />
+                    {product[6]}
+                  </li>
+                )) : (
                   <li>No results found. Try a different search!</li>
                 )}
               </ul>
