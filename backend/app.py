@@ -182,13 +182,18 @@ def search():
         product_rating = "⭐ Rating: " + str(round(product['rating'].iloc[0], 2))
        else:
         product_rating = None
+
+
        if not product.empty and product['highlights'].iloc[0]:
-        product_highlights = product['highlights']
-        product_highlights = "✨ Highlights: " + ", ".join(product_highlights.astype(str))
+        highlights_str = product['highlights'].iloc[0]
+        highlights_list = ast.literal_eval(highlights_str)  # safely parse string to list
+        product_highlights = "✨ Highlights: " + ", ".join(highlights_list)
        else:
         product_highlights = None
        
        reviews = df_reviews[df_reviews['product_name'] == product_name]
+
+
        if not reviews.empty and len(reviews['important_terms'].iloc[0]) > 0:
         product_terms = reviews['important_terms'].iloc[0][:3]
         product_terms = "🔑 What users think: " + ", ".join(product_terms)
