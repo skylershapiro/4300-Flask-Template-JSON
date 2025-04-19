@@ -16,7 +16,7 @@
       body {
         margin: 0;
         font-family: "Futura", "Nunito", sans-serif;
-        background: linear-gradient(to bottom right, #eac9f4, #e7e2f7);
+        background: linear-gradient(to bottom right, #eac9f4, #c0cdf0);
         color: #333;
       }
       .container {
@@ -39,8 +39,13 @@
         animation: bounce 1.5s infinite;
       }
       @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
       }
       p.tagline {
         text-align: center;
@@ -62,12 +67,13 @@
         font-weight: bold;
         margin-bottom: 8px;
       }
-      select, input {
+      select,
+      input {
         width: 100%;
         padding: 10px;
         border: none;
         border-radius: 15px;
-        box-shadow: 0 0 0 3px #e7e2f7 inset;
+        box-shadow: 0 0 0 3px #d0cce7 inset;
       }
       button {
         grid-column: span 2;
@@ -146,7 +152,8 @@
           fetch(window.location.href + "/ingredients")
             .then((res) => res.json())
             .then((data) => {
-              if (data.ingredients) setIngredients(["Any", ...data.ingredients]);
+              if (data.ingredients)
+                setIngredients(["Any", ...data.ingredients]);
             });
         }, []);
 
@@ -191,23 +198,58 @@
           <div className="container">
             <h1>
               SmartSkin
-              <img src="/static/images/cursor.png" alt="cursor" className="cursor-icon" />
+              <img
+                src="/static/images/cursor.png"
+                alt="cursor"
+                className="cursor-icon"
+              />
             </h1>
-            <p className="tagline">find the right product for your skin, budget and goals in seconds!</p>
+            <p className="tagline">
+              find the right product for your skin, budget and goals in seconds!
+            </p>
 
             <form onSubmit={handleSearch}>
               <div>
                 <label>Skin Concerns:</label>
-                <select onChange={(e) => addToList(e.target.value, setSkinConcerns, skinConcerns)}>
-                  <option disabled selected>Pick concerns...</option>
-                  {["Acne", "Blemishes", "Sensitive Skin", "Wrinkles", "Anti-Aging", "Dryness", "Pores", "Redness", "Dullness", "Scars", "Dark Circles", "Texture"].map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                <select
+                  onChange={(e) =>
+                    addToList(e.target.value, setSkinConcerns, skinConcerns)
+                  }
+                >
+                  <option disabled selected>
+                    Pick concerns...
+                  </option>
+                  {[
+                    "Acne",
+                    "Blemishes",
+                    "Sensitive Skin",
+                    "Wrinkles",
+                    "Anti-Aging",
+                    "Dryness",
+                    "Pores",
+                    "Redness",
+                    "Dullness",
+                    "Scars",
+                    "Dark Circles",
+                    "Texture",
+                  ].map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
                 <div className="selected-items">
                   {skinConcerns.map((c) => (
                     <div key={c} className="selected-item">
-                      {c}<span className="remove-item" onClick={() => removeFromList(c, setSkinConcerns, skinConcerns)}>❌</span>
+                      {c}
+                      <span
+                        className="remove-item"
+                        onClick={() =>
+                          removeFromList(c, setSkinConcerns, skinConcerns)
+                        }
+                      >
+                        ❌
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -215,25 +257,54 @@
 
               <div>
                 <label>Skin Type:</label>
-                <select value={skinType} onChange={(e) => setSkinType(e.target.value)}>
+                <select
+                  value={skinType}
+                  onChange={(e) => setSkinType(e.target.value)}
+                >
                   {["normal", "oily", "dry", "combination"].map((t) => (
-                    <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                    <option key={t} value={t}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
                 <label>Restrictions:</label>
-                <select onChange={(e) => addToList(e.target.value, setRestrictions, restrictions)}>
-                  <option disabled selected>Pick restrictions...</option>
-                  {["Vegan", "Cruelty-Free", "Fragrance-Free", "Paraben-Free", "Gluten-Free"].map((r) => (
-                    <option key={r} value={r}>{r}</option>
+                <select
+                  onChange={(e) =>
+                    addToList(e.target.value, setRestrictions, restrictions)
+                  }
+                >
+                  <option disabled selected>
+                    Pick restrictions...
+                  </option>
+                  {[
+                    "Vegan",
+                    "Cruelty-Free",
+                    "Fragrance Free",
+                    "Without Parabens",
+                    "Gluten Free",
+                    "Alcohol Free",
+                    "Without Sulfates SLS & SLES",
+                  ].map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
                   ))}
                 </select>
                 <div className="selected-items">
                   {restrictions.map((r) => (
                     <div key={r} className="selected-item">
-                      {r}<span className="remove-item" onClick={() => removeFromList(r, setRestrictions, restrictions)}>❌</span>
+                      {r}
+                      <span
+                        className="remove-item"
+                        onClick={() =>
+                          removeFromList(r, setRestrictions, restrictions)
+                        }
+                      >
+                        ❌
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -241,27 +312,58 @@
 
               <div>
                 <label>Ingredients:</label>
-                <input type="text" placeholder="Search Ingredients..." value={ingredientSearch} onChange={(e) => setIngredientSearch(e.target.value)} />
-                <select multiple onChange={(e) => setIngredient([...e.target.selectedOptions].map((o) => o.value))}>
+                <input
+                  type="text"
+                  placeholder="Search Ingredients..."
+                  value={ingredientSearch}
+                  onChange={(e) => setIngredientSearch(e.target.value)}
+                />
+                <select
+                  multiple
+                  onChange={(e) =>
+                    setIngredient(
+                      [...e.target.selectedOptions].map((o) => o.value)
+                    )
+                  }
+                >
                   {filteredIngredients.map((i) => (
-                    <option key={i} value={i}>{i}</option>
+                    <option key={i} value={i}>
+                      {i}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
                 <label>Brand:</label>
-                <input type="text" placeholder="Search Brands..." value={brandSearch} onChange={(e) => setBrandSearch(e.target.value)} />
-                <select onChange={(e) => addToList(e.target.value, setBrand, brand)}>
-                  <option disabled selected>Pick a brand...</option>
+                <input
+                  type="text"
+                  placeholder="Search Brands..."
+                  value={brandSearch}
+                  onChange={(e) => setBrandSearch(e.target.value)}
+                />
+                <select
+                  onChange={(e) => addToList(e.target.value, setBrand, brand)}
+                >
+                  <option disabled selected>
+                    Pick a brand...
+                  </option>
                   {filteredBrands.map((b) => (
-                    <option key={b} value={b}>{b}</option>
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
                   ))}
                 </select>
                 <div className="selected-items">
                   {brand.map((b) => (
                     <div key={b} className="selected-item">
-                      {b}<span className="remove-item" onClick={() => removeFromList(b, setBrand, brand)}>❌</span>
+                      {b}
+                      <span
+                        className="remove-item"
+                        onClick={() => removeFromList(b, setBrand, brand)}
+                      >
+                        ❌
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -269,13 +371,34 @@
 
               <div>
                 <label>Price Range ($):</label>
-                <input type="number" min="0" max="200" value={priceRange[0]} onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])} />
-                <input type="number" min="0" max="200" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])} />
+                <input
+                  type="number"
+                  min="0"
+                  max="200"
+                  value={priceRange[0]}
+                  onChange={(e) =>
+                    setPriceRange([parseInt(e.target.value), priceRange[1]])
+                  }
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="200"
+                  value={priceRange[1]}
+                  onChange={(e) =>
+                    setPriceRange([priceRange[0], parseInt(e.target.value)])
+                  }
+                />
               </div>
 
               <div className="full-width">
                 <label>Search for a Product:</label>
-                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g., moisturizer" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="e.g., moisturizer"
+                />
               </div>
 
               <button type="submit">Search!</button>
@@ -286,9 +409,13 @@
                 {results.length > 0 ? (
                   results.map((product, i) => (
                     <li key={i}>
-                      <strong>{product[0]}</strong> — 🏷️ Brand: {product[3]} — 💰 ${product[2]}<br />
-                      {product[4]}<br />
-                      {product[5]}<br />
+                      <strong>{product[0]}</strong> — 🏷️ Brand: {product[3]} —
+                      💰 ${product[2]}
+                      <br />
+                      {product[4]}
+                      <br />
+                      {product[5]}
+                      <br />
                       {product[6]}
                     </li>
                   ))

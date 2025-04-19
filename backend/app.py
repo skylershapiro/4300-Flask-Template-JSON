@@ -108,6 +108,36 @@ def highlight_matches_skin_concerns(row, user_skin_concerns):
 
     return not found_good_for
 
+def highlight_matches_restrictions(row, restrictions):
+    highlights = row.get("highlights", "")
+    product_name = row.get("product_name", "Unknown")
+
+    # Keep product if no highlights
+    if highlights == "":
+        return True
+
+    # Parse highlights string safely
+    if isinstance(highlights, str):
+        try:
+            highlights = ast.literal_eval(highlights)
+        except (ValueError, SyntaxError):
+            print(f"[ERROR] Couldn't parse highlights for {product_name}")
+            return True
+
+    # Normalize for comparison
+    highlights = [h.lower() for h in highlights if isinstance(h, str)]
+    restrictions_lower = [r.lower() for r in restrictions]
+
+    # Check that all restrictions are satisfied
+    for restriction in restrictions_lower:
+        if not any(restriction in h for h in highlights):
+            print(f"❌ {product_name} missing restriction: {restriction}")
+            return False
+
+    print(f"✅ {product_name} passed restriction filter.")
+    return True
+
+
 @app.route('/search', methods=['POST'])
 def search():
     data = request.get_json()
@@ -138,6 +168,11 @@ def search():
     if use_brand:
         brand_names = [name.lower().strip() for name in brand_names]
         filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
+    
+    # Apply restrictions filtering
+    if use_restrictions:
+        print(f"🎯 Filtering by restrictions: {restrictions}")
+        filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_restrictions(row, restrictions), axis=1)]
 
     if skin_type:
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_skin_type(row, skin_type), axis=1)]
