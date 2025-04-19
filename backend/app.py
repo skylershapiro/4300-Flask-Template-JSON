@@ -2,25 +2,16 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 import pandas as pd
-import nltk
-from flask_cors import CORS
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 import ast
-import re
+import numpy as np
+from flask_cors import CORS
 
-# ROOT_PATH for linking with all your files.
-os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
-
-# Get the directory of the current script
+# Paths
 current_directory = os.path.dirname(os.path.abspath(__file__))
-
-# Specify the path to the JSON file relative to the current script
 json_file_path_sephora = os.path.join(current_directory, 'filtered_sephora_products.json')
 json_file_path_reviews = os.path.join(current_directory, 'review_terms_per_product.json')
 
-# Load the JSON data into a DataFrame
+# Load data
 with open(json_file_path_sephora, 'r') as file:
     dat_sephora = json.load(file)
     df_sephora = pd.DataFrame(dat_sephora)
@@ -29,6 +20,7 @@ with open(json_file_path_reviews, 'r') as file:
     dat_reviews = json.load(file)
     df_reviews = pd.DataFrame(dat_reviews)
 
+# Initialize app
 app = Flask(__name__)
 CORS(app)
 
@@ -53,6 +45,7 @@ def get_brands():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Helper functions
 def jaccard_similarity(a, b):
     set_a = set(a.lower().split())
     set_b = set(b.lower().split())
@@ -60,17 +53,13 @@ def jaccard_similarity(a, b):
 
 def highlight_matches_skin_type(row, user_skin_type):
     highlights = row.get('highlights')
-    product_name = row.get('product_name', 'Unknown')
-
     if highlights == "":
         return True
-
     if isinstance(highlights, str):
         try:
             highlights = ast.literal_eval(highlights)
         except (ValueError, SyntaxError):
             return True
-
     found_best_for = False
     for h in highlights:
         if isinstance(h, str) and "best for" in h.lower():
@@ -81,22 +70,17 @@ def highlight_matches_skin_type(row, user_skin_type):
                     return True
             except IndexError:
                 continue
-
     return not found_best_for
 
 def highlight_matches_skin_concerns(row, user_skin_concerns):
     highlights = row.get('highlights')
-    product_name = row.get('product_name', 'Unknown')
-
     if highlights == "":
         return True
-
     if isinstance(highlights, str):
         try:
             highlights = ast.literal_eval(highlights)
         except (ValueError, SyntaxError):
             return True
-
     found_good_for = False
     for h in highlights:
         if isinstance(h, str) and "good for" in h.lower():
@@ -105,38 +89,23 @@ def highlight_matches_skin_concerns(row, user_skin_concerns):
             for concern in user_skin_concerns:
                 if concern.lower() in tag_section:
                     return True
-
     return not found_good_for
 
 def highlight_matches_restrictions(row, restrictions):
     highlights = row.get("highlights", "")
-    product_name = row.get("product_name", "Unknown")
-
-    # Keep product if no highlights
     if highlights == "":
         return True
-
-    # Parse highlights string safely
     if isinstance(highlights, str):
         try:
             highlights = ast.literal_eval(highlights)
         except (ValueError, SyntaxError):
-            print(f"[ERROR] Couldn't parse highlights for {product_name}")
             return True
-
-    # Normalize for comparison
     highlights = [h.lower() for h in highlights if isinstance(h, str)]
     restrictions_lower = [r.lower() for r in restrictions]
-
-    # Check that all restrictions are satisfied
     for restriction in restrictions_lower:
         if not any(restriction in h for h in highlights):
-            print(f"❌ {product_name} missing restriction: {restriction}")
             return False
-
-    print(f"✅ {product_name} passed restriction filter.")
     return True
-
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -144,15 +113,17 @@ def search():
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
 
+    # Extract user inputs
     skin_concerns = data.get("skin_concerns", [])
     skin_type = data.get("skin_type", "normal").lower().strip()
     brand_names = data.get("brand_names", [])
     price_range = data.get("price_range", [0, 200])
     restrictions = data.get("restrictions", [])
     ingredients = data.get("ingredients", [])
+    exact_product_search = data.get("user_search_input", "").lower().strip()
+
     price_min = float(price_range[0])
     price_max = float(price_range[1])
-    exact_product_search = data.get("user_search_input", "").lower().strip()
 
     use_price = (price_min != 0) or (price_max != 200)
     use_brand = brand_names != []
@@ -168,10 +139,8 @@ def search():
     if use_brand:
         brand_names = [name.lower().strip() for name in brand_names]
         filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
-    
-    # Apply restrictions filtering
+
     if use_restrictions:
-        print(f"🎯 Filtering by restrictions: {restrictions}")
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_restrictions(row, restrictions), axis=1)]
 
     if skin_type:
@@ -183,13 +152,32 @@ def search():
     relevant_doc_inds = []
     if use_exact_product_search:
         for i in range(len(filtered_df['product_name'])):
-            product_name = filtered_df["product_name"].iloc[i]
-            sim = jaccard_similarity(exact_product_search, product_name)
-            rating = filtered_df['rating'].iloc[i]
-            rating_normalized = rating / 5 if not np.isnan(rating) else 0
-            final_score = 0.9 * sim + 0.1 * rating_normalized
-            relevant_doc_inds.append((product_name, round(final_score, 4), float(filtered_df["price_usd"].iloc[i]), filtered_df["brand_name"].iloc[i]))
+            row = filtered_df.iloc[i]
+            product_name = row['product_name']
+            rating = row['rating']
+            highlights = row['highlights']
+            ingredients_clean = row['ingredients_clean']
 
+            sim_name = jaccard_similarity(exact_product_search, product_name)
+            sim_highlights = 0
+            if isinstance(highlights, str):
+                try:
+                    highlights_list = ast.literal_eval(highlights)
+                    highlights_text = " ".join(highlights_list)
+                    sim_highlights = jaccard_similarity(exact_product_search, highlights_text)
+                except (ValueError, SyntaxError):
+                    pass
+
+            sim_ingredients = 0
+            if isinstance(ingredients_clean, list):
+                ingredients_text = " ".join(ingredients_clean)
+                sim_ingredients = jaccard_similarity(exact_product_search, ingredients_text)
+
+            rating_normalized = rating / 5 if not np.isnan(rating) else 0
+
+            final_score = (0.65 * sim_name + 0.15 * sim_highlights + 0.10 * sim_ingredients + 0.10 * rating_normalized)
+            relevant_doc_inds.append((product_name, round(final_score, 4), float(row["price_usd"]), row["brand_name"]))
+        
         top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
     else:
         top_5_relevant_docs = [
@@ -197,6 +185,7 @@ def search():
             for _, row in filtered_df.head(5).iterrows()
         ]
 
+    # Add review info
     top_5_relevant_docs_w_review = []
     for doc in top_5_relevant_docs:
         product_name = doc[0]
