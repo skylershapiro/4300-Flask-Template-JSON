@@ -33,6 +33,7 @@ def get_ingredients():
     try:
         flat_list = [item for sublist in df_sephora.ingredients_clean.dropna() for item in sublist]
         ingredients = list(set(flat_list))
+        ingredients = sorted(ingredients)
         return jsonify({"ingredients": ingredients})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
