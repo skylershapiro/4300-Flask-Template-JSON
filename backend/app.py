@@ -140,6 +140,25 @@ def filter_by_ingredients(row, selected_ingredients):
     print(f"✅ {product_name}: All selected ingredients matched.")
     return True
 
+def category_match(row, user_query):
+    categories = []
+    if isinstance(row.get("primary_category"), str):
+        categories.append(row["primary_category"])
+    if isinstance(row.get("secondary_category"), str):
+        categories.append(row["secondary_category"])
+    if isinstance(row.get("tertiary_category"), str):
+        categories.append(row["tertiary_category"])
+    if not categories:
+        return True  # If no categories, do not filter out
+
+    category_words = " ".join(categories).lower().split()
+    query_words = user_query.lower().split()
+
+    for q_word in query_words:
+        if q_word in category_words:
+            return True
+    return False
+
 @app.route('/search', methods=['POST'])
 def search():
     data = request.get_json()
@@ -183,6 +202,9 @@ def search():
 
     if skin_concerns:
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_skin_concerns(row, skin_concerns), axis=1)]
+
+    if use_exact_product_search:
+        filtered_df = filtered_df[filtered_df.apply(lambda row: category_match(row, exact_product_search), axis=1)]
 
     relevant_doc_inds = []
     if use_exact_product_search:
