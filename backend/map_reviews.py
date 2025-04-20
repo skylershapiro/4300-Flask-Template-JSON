@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 # Step 1: Load the original JSON
-with open("filtered_sephora_reviews.json", "r") as f:
+with open("sephora_reviews.json", "r") as f:
     data = json.load(f)
 
 # Step 2: Group reviews by product (using a tuple of product_name and brand_name as the key)
@@ -27,5 +27,5 @@ for (product_name, brand_name), reviews in grouped_reviews.items():
     })
 
 # Step 5: Save as JSON
-with open("review_terms_per_product.json", "w") as f:
+with open("full_review_terms_per_product.json", "w") as f:
     json.dump(output, f, indent=2)
