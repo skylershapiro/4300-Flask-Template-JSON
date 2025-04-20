@@ -140,7 +140,7 @@ def filter_by_ingredients(row, selected_ingredients):
     print(f"✅ {product_name}: All selected ingredients matched.")
     return True
 
-def category_match(row, user_query):
+def category_match_or_in_name(row, user_query):  # <-- modified
     categories = []
     if isinstance(row.get("primary_category"), str):
         categories.append(row["primary_category"])
@@ -148,15 +148,24 @@ def category_match(row, user_query):
         categories.append(row["secondary_category"])
     if isinstance(row.get("tertiary_category"), str):
         categories.append(row["tertiary_category"])
+
+    product_name = row.get("product_name", "").lower()
+    query_lower = user_query.lower()
+
+    # Exception: if query appears in product name, don't filter out
+    if query_lower in product_name:
+        return True
+
     if not categories:
-        return True  # If no categories, do not filter out
+        return True
 
     category_words = " ".join(categories).lower().split()
-    query_words = user_query.lower().split()
+    query_words = query_lower.split()
 
     for q_word in query_words:
         if q_word in category_words:
             return True
+
     return False
 
 @app.route('/search', methods=['POST'])
@@ -204,7 +213,7 @@ def search():
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_skin_concerns(row, skin_concerns), axis=1)]
 
     if use_exact_product_search:
-        filtered_df = filtered_df[filtered_df.apply(lambda row: category_match(row, exact_product_search), axis=1)]
+        filtered_df = filtered_df[filtered_df.apply(lambda row: category_match_or_in_name(row, exact_product_search), axis=1)]  # <-- modified
 
     relevant_doc_inds = []
     if use_exact_product_search:
