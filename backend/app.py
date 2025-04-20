@@ -108,6 +108,38 @@ def highlight_matches_restrictions(row, restrictions):
             return False
     return True
 
+def filter_by_ingredients(row, selected_ingredients):
+    product_name = row.get("product_name", "Unknown")
+    ingredients_raw = row.get("ingredients_clean", "")
+
+    if not selected_ingredients:
+        return True  # Don't filter if nothing is selected
+
+    if ingredients_raw == "":
+        print(f" {product_name}: No ingredients listed — keeping product.")
+        return True
+
+    try:
+        product_ingredients = (
+            ingredients_raw
+            if isinstance(ingredients_raw, list)
+            else ast.literal_eval(ingredients_raw)
+        )
+    except (ValueError, SyntaxError):
+        print(f"[ERROR] Failed to parse ingredients for {product_name}")
+        return True
+
+    product_ingredients = [ing.lower().strip() for ing in product_ingredients]
+    selected_ingredients = [ing.lower().strip() for ing in selected_ingredients]
+
+    for ing in selected_ingredients:
+        if ing not in product_ingredients:
+            print(f"{product_name}: Missing ingredient '{ing}' — filtering out.")
+            return False
+
+    print(f"✅ {product_name}: All selected ingredients matched.")
+    return True
+
 @app.route('/search', methods=['POST'])
 def search():
     data = request.get_json()
@@ -140,6 +172,8 @@ def search():
     if use_brand:
         brand_names = [name.lower().strip() for name in brand_names]
         filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
+    
+    filtered_df = filtered_df[filtered_df.apply(lambda row: filter_by_ingredients(row, ingredients), axis=1)]
 
     if use_restrictions:
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_restrictions(row, restrictions), axis=1)]
