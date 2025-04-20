@@ -158,6 +158,7 @@
         }, []);
 
         const handleSearch = async (e) => {
+          setResults([]);
           e.preventDefault();
           const formData = {
             skin_concerns: skinConcerns,
@@ -221,17 +222,17 @@
                   </option>
                   {[
                     "Acne",
-                    "Blemishes",
-                    "Sensitive Skin",
-                    "Wrinkles",
                     "Anti-Aging",
+                    "Blemishes",
+                    "Dark Circles",
                     "Dryness",
+                    "Dullness",
                     "Pores",
                     "Redness",
-                    "Dullness",
                     "Scars",
-                    "Dark Circles",
+                    "Sensitive Skin",
                     "Texture",
+                    "Wrinkles",
                   ].map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -261,7 +262,7 @@
                   value={skinType}
                   onChange={(e) => setSkinType(e.target.value)}
                 >
-                  {["normal", "oily", "dry", "combination"].map((t) => (
+                  {["combination", "dry", "normal", "oily"].map((t) => (
                     <option key={t} value={t}>
                       {t.charAt(0).toUpperCase() + t.slice(1)}
                     </option>
@@ -280,13 +281,13 @@
                     Pick restrictions...
                   </option>
                   {[
-                    "Vegan",
+                    "Alcohol Free",
                     "Cruelty-Free",
                     "Fragrance Free",
-                    "Without Parabens",
                     "Gluten Free",
-                    "Alcohol Free",
+                    "Without Parabens",
                     "Without Sulfates SLS & SLES",
+                    "Vegan",
                   ].map((r) => (
                     <option key={r} value={r}>
                       {r}
@@ -420,7 +421,7 @@
                     </li>
                   ))
                 ) : (
-                  <li>No results found. Try a different search!</li>
+                  <li>No matching results found. Try a different search!</li>
                 )}
               </ul>
             </div>
