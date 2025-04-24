@@ -241,7 +241,22 @@ def search():
 
             rating_normalized = rating / 5 if not np.isnan(rating) else 0
 
-            final_score = (0.65 * sim_name + 0.15 * sim_highlights + 0.10 * sim_ingredients + 0.10 * rating_normalized)
+            # New term: 10% if product has non-empty product_terms
+            has_terms = 0
+            review_row = df_reviews[df_reviews['product_name'] == product_name]
+            if not review_row.empty:
+                terms = review_row['important_terms'].iloc[0]
+                if isinstance(terms, list) and len(terms) > 0:
+                    has_terms = 1
+
+            final_score = (
+                0.55 * sim_name +
+                0.15 * sim_highlights +
+                0.10 * sim_ingredients +
+                0.10 * rating_normalized +
+                0.10 * has_terms
+            )
+
             relevant_doc_inds.append((product_name, round(final_score, 4), float(row["price_usd"]), row["brand_name"]))
         
         top_5_relevant_docs = sorted(relevant_doc_inds, key=lambda x: x[1], reverse=True)[:5]
