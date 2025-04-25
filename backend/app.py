@@ -108,37 +108,26 @@ def highlight_matches_restrictions(row, restrictions):
             return False
     return True
 
-def filter_by_ingredients(row, selected_ingredients):
-    product_name = row.get("product_name", "Unknown")
+def filter_by_ingredients(row, selected_ingredients, exclude=False):
     ingredients_raw = row.get("ingredients_clean", "")
-
-    if not selected_ingredients:
-        return True  # Don't filter if nothing is selected
-
-    if ingredients_raw == "":
-        print(f" {product_name}: No ingredients listed — keeping product.")
+    if not selected_ingredients or ingredients_raw == "":
         return True
-
     try:
-        product_ingredients = (
+        product_ings = (
             ingredients_raw
             if isinstance(ingredients_raw, list)
             else ast.literal_eval(ingredients_raw)
         )
-    except (ValueError, SyntaxError):
-        print(f"[ERROR] Failed to parse ingredients for {product_name}")
+    except Exception:
         return True
-
-    product_ingredients = [ing.lower().strip() for ing in product_ingredients]
-    selected_ingredients = [ing.lower().strip() for ing in selected_ingredients]
-
-    for ing in selected_ingredients:
-        if ing not in product_ingredients:
-            print(f"{product_name}: Missing ingredient '{ing}' — filtering out.")
-            return False
-
-    print(f"✅ {product_name}: All selected ingredients matched.")
-    return True
+    product_ings = [i.lower().strip() for i in product_ings]
+    sel = [i.lower().strip() for i in selected_ingredients]
+    if exclude:
+        # keep only those WITHOUT any of the selected ingredients
+        return all(i not in product_ings for i in sel)
+    else:
+        # keep only those WITH *all* of the selected ingredients
+        return all(i in product_ings for i in sel)
 
 def category_match_or_in_name(row, user_query):  # <-- modified
     categories = []
@@ -182,6 +171,10 @@ def search():
     restrictions = data.get("restrictions", [])
     ingredients = data.get("ingredients", [])
     exact_product_search = data.get("user_search_input", "").lower().strip()
+   
+    exclude_ingredients = data.get("exclude_ingredients", False)
+    exclude_brands = data.get("exclude_brands", False)
+
 
     price_min = float(price_range[0])
     price_max = float(price_range[1])
@@ -197,11 +190,26 @@ def search():
     if use_price:
         filtered_df = filtered_df[(filtered_df['price_usd'] >= price_min) & (filtered_df['price_usd'] <= price_max)]
 
+
     if use_brand:
-        brand_names = [name.lower().strip() for name in brand_names]
-        filtered_df = filtered_df[filtered_df['brand_name'].str.lower().str.strip().isin(brand_names)]
-    
-    filtered_df = filtered_df[filtered_df.apply(lambda row: filter_by_ingredients(row, ingredients), axis=1)]
+        bn_lower = [b.lower().strip() for b in brand_names]
+        if exclude_brands:
+            filtered_df = filtered_df[
+                ~filtered_df['brand_name'].str.lower().str.strip().isin(bn_lower)
+            ]
+        else:
+            filtered_df = filtered_df[
+                filtered_df['brand_name'].str.lower().str.strip().isin(bn_lower)
+            ]
+
+    filtered_df = filtered_df[
+        filtered_df.apply(
+            lambda row: filter_by_ingredients(row, ingredients, exclude_ingredients),
+            axis=1
+        )
+    ]
+
+
 
     if use_restrictions:
         filtered_df = filtered_df[filtered_df.apply(lambda row: highlight_matches_restrictions(row, restrictions), axis=1)]

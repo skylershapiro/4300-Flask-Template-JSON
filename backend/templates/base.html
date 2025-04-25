@@ -19,6 +19,50 @@
         background: linear-gradient(to bottom right, #eac9f4, #c0cdf0);
         color: #333;
       }
+
+      .toggle-switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: #f6d6ff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        width: fit-content;
+        font-weight: bold;
+      }
+
+      .toggle-switch input[type="checkbox"] {
+        appearance: none;
+        width: 32px;
+        height: 20px;
+        background-color: #ccc;
+        border-radius: 10px;
+        position: relative;
+        outline: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .toggle-switch input[type="checkbox"]::before {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        background-color: white;
+        border-radius: 50%;
+        top: 3px;
+        left: 3px;
+        transition: transform 0.3s;
+      }
+
+      .toggle-switch input[type="checkbox"]:checked {
+        background-color: #8eafff;
+      }
+
+      .toggle-switch input[type="checkbox"]:checked::before {
+        transform: translateX(12px);
+      }
+
       .container {
         max-width: 900px;
         margin: 0 auto;
@@ -127,7 +171,6 @@
 
   <body>
     <div id="root"></div>
-
     <script type="text/babel">
       function SmartSkinApp() {
         const [query, setQuery] = React.useState("");
@@ -143,6 +186,11 @@
         const [brandSearch, setBrandSearch] = React.useState("");
         const [ingredientSearch, setIngredientSearch] = React.useState("");
 
+        //ingredient and brand include and exclude toggles
+        const [excludeIngredients, setExcludeIngredients] =
+          React.useState(false);
+        const [excludeBrands, setExcludeBrands] = React.useState(false);
+
         React.useEffect(() => {
           fetch(window.location.href + "/brands")
             .then((res) => res.json())
@@ -153,7 +201,7 @@
             .then((res) => res.json())
             .then((data) => {
               if (data.ingredients)
-                setIngredients([...data.ingredients]);
+                setIngredients(["Any", ...data.ingredients]);
             });
         }, []);
 
@@ -168,7 +216,10 @@
             skin_type: skinType,
             restrictions: restrictions,
             ingredients: ingredient,
+            exclude_ingredients: excludeIngredients,
+            exclude_brands: excludeBrands,
           };
+
           const response = await fetch(window.location.href + "/search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -313,12 +364,26 @@
 
               <div>
                 <label>Ingredients:</label>
+                <div className="toggle-switch">
+                  <span>
+                    {excludeIngredients
+                      ? "Exclude Ingredients"
+                      : "Include Ingredients"}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={excludeIngredients}
+                    onChange={() => setExcludeIngredients(!excludeIngredients)}
+                  />
+                </div>
+
                 <input
                   type="text"
                   placeholder="Search Ingredients..."
                   value={ingredientSearch}
                   onChange={(e) => setIngredientSearch(e.target.value)}
                 />
+
                 <select
                   onChange={(e) =>
                     addToList(e.target.value, setIngredient, ingredient)
@@ -333,13 +398,16 @@
                     </option>
                   ))}
                 </select>
+
                 <div className="selected-items">
                   {ingredient.map((i) => (
                     <div key={i} className="selected-item">
                       {i}
                       <span
                         className="remove-item"
-                        onClick={() => removeFromList(i, setIngredient, ingredient)}
+                        onClick={() =>
+                          removeFromList(i, setIngredient, ingredient)
+                        }
                       >
                         ❌
                       </span>
@@ -350,6 +418,16 @@
 
               <div>
                 <label>Brand:</label>
+                <div className="toggle-switch">
+                  <span>
+                    {excludeBrands ? "Exclude Brands" : "Include Brands"}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={excludeBrands}
+                    onChange={() => setExcludeBrands(!excludeBrands)}
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder="Search Brands..."
